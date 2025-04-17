@@ -1,0 +1,231 @@
+import 'package:flutter/material.dart';
+import 'diabetes_test_page.dart';
+
+class DiabetesSymptomsScreen extends StatefulWidget {
+  const DiabetesSymptomsScreen({Key? key}) : super(key: key);
+
+  @override
+  _DiabetesSymptomsScreenState createState() => _DiabetesSymptomsScreenState();
+}
+
+class _DiabetesSymptomsScreenState extends State<DiabetesSymptomsScreen> {
+  Map<String, bool> symptoms = {
+    'Frequent urination': false,
+    'Excessive thirst': false,
+    'Unexplained weight loss': false,
+    'Extreme hunger': false,
+    'Blurred vision': false,
+    'Increased fatigue': false,
+    'Slow-healing sores': false,
+    'Frequent infections': false,
+    'Numbness or tingling in hands/feet': false,
+  };
+
+  int get symptomCount =>
+      symptoms.values.where((isChecked) => isChecked).length;
+  bool get showWarning => symptomCount < 1;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF6C63FF), Color(0xFF4A90E2)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        title: const Text('Diabetes Symptoms'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFF8F9FF), Color(0xFFE6E9FF)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                children: [
+                  _buildSymptomsCard(),
+                  const SizedBox(height: 20),
+                  _buildActionButtons(),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSymptomsCard() {
+    return Card(
+      elevation: 5,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            const Icon(
+              Icons.medical_services,
+              size: 50,
+              color: Color(0xFF6C63FF),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Diabetes Symptoms Check',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2D2D3A),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'Please check any symptoms you\'ve experienced recently:',
+              style: TextStyle(
+                fontSize: 16,
+                color: Color(0xFF5A5A5A),
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            _buildSymptomsCheckboxes(),
+            const SizedBox(height: 20),
+            _buildStatusBox(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSymptomsCheckboxes() {
+    return Column(
+      children: symptoms.keys.map((symptom) {
+        return CheckboxListTile(
+          title: Text(
+            symptom,
+            style: const TextStyle(
+              fontSize: 16,
+              color: Color(0xFF2D2D3A),
+            ),
+          ),
+          value: symptoms[symptom],
+          activeColor: const Color(0xFF6C63FF),
+          checkColor: Colors.white,
+          contentPadding: EdgeInsets.zero,
+          controlAffinity: ListTileControlAffinity.leading,
+          onChanged: (bool? value) {
+            setState(() {
+              symptoms[symptom] = value ?? false;
+            });
+          },
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildStatusBox() {
+    if (showWarning) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF3F0),
+          borderRadius: BorderRadius.circular(15),
+          border: const Border(
+            left: BorderSide(
+              color: Color(0xFFFF9E80),
+              width: 4,
+            ),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text(
+              'Most likely you do not have diabetes.',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFFE64A19),
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'You\'ve selected fewer than 1 symptoms. If you still want to check, use the button below.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF5A5A5A),
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0F8FF),
+          borderRadius: BorderRadius.circular(15),
+          border: const Border(
+            left: BorderSide(
+              color: Color(0xFF6C63FF),
+              width: 4,
+            ),
+          ),
+        ),
+        child: Text(
+          'You\'ve selected $symptomCount symptoms. It\'s recommended to take a diabetes test.',
+          style: const TextStyle(
+            fontSize: 16,
+            color: Color(0xFF2D2D3A),
+            height: 1.5,
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildActionButtons() {
+    return ElevatedButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const DiabetesTestPage()),
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 15),
+        minimumSize: const Size(double.infinity, 50),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+      ),
+      child: Text(
+        showWarning ? 'Check Anyway' : 'Continue to Test',
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
