@@ -33,6 +33,8 @@ class _MyHomePageState extends State<MyHomePage> {
     "Get regular checkups with your doctor.",
     "Maintain a healthy social life and strong relationships.",
     "Practice good hygiene to prevent infections.",
+    "It's best to avoid animal fats for a healthier lifestyle",
+    "Include more plant-based foods in your diet for better health.",
   ];
   final List<String> _slideImages = [
     'assets/assets/slide1.png', // Replace with your actual image paths
@@ -45,6 +47,8 @@ class _MyHomePageState extends State<MyHomePage> {
     'assets/assets/slide8.png',
     'assets/assets/slide9.png',
     'assets/assets/slide10.png',
+    'assets/assets/slide11.png',
+    'assets/assets/slide12.png',
   ];
 
   @override

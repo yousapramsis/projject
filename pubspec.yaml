@@ -84,6 +84,8 @@ flutter:
   - assets/assets/slide8.png
   - assets/assets/slide9.png
   - assets/assets/slide10.png
+  - assets/assets/slide11.png
+  - assets/assets/slide12.png
   - assets/assets/modelaferconvert.tflite
   - assets/assets/Heart.tflite
   - assets/assets/diabetes_model_fixed.tflite
