@@ -180,8 +180,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           DiseaseCard(
                             title: 'Diabetes',
                             icon: Icons.bloodtype,
-                            color1: const Color.fromARGB(255, 238, 255, 0),
-                            color2: const Color.fromARGB(255, 132, 155, 2),
+                            color1: const Color.fromARGB(255, 228, 235, 141),
+                            color2: const Color.fromARGB(255, 176, 194, 76),
                             route:
                                 DiabetesSymptomsScreen(), // Route to symptoms screen first
                           ),
