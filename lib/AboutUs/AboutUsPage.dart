@@ -88,20 +88,18 @@ class AboutUsPage extends StatelessWidget {
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Color(0xFF2D2D3A),
-          ),),
+            ),
+          ),
           const SizedBox(height: 10),
           const Text(
             'Health Friendly App\n',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: Color(0xFF5A5A5A)),),
+            style: TextStyle(fontSize: 16, color: Color(0xFF5A5A5A)),
+          ),
           const Text(
             'Empowering early detection of chronic conditions through advanced predictive analytics.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey),
+            style: TextStyle(fontSize: 14, color: Colors.grey),
           ),
         ],
       ),
@@ -120,12 +118,14 @@ class AboutUsPage extends StatelessWidget {
                 name: 'Dr. Mohamed Saeed',
                 title: 'Head of Internal Medicine, O6U',
                 icon: Icons.medical_services,
-                color: Color(0xFFFF7D7D),),),
+                color: Color(0xFFFF7D7D),
+              ),
+            ),
             SizedBox(width: 15),
             Expanded(
               child: SupervisorInfoCard(
                   name: 'Dr. Samy ElMokadem',
-                  title: 'Computer Science Specialist, O6U',
+                  title: 'CS professore Specialist, O6U',
                   icon: Icons.computer,
                   color: Color(0xFF7D8AFF)),
             ),
@@ -142,9 +142,9 @@ class AboutUsPage extends StatelessWidget {
         const SizedBox(height: 20),
         const SupervisorInfoCard(
             name: 'Marco ELKess Mallak',
-            title: 'Assistant Engineer',
+            title: 'Teaching Assistant',
             icon: Icons.engineering,
-            color: Color(0xFF7DFF9D)),
+            color: Color.fromARGB(255, 98, 139, 22)),
       ],
     );
   }
@@ -165,35 +165,33 @@ class AboutUsPage extends StatelessWidget {
             TeamMemberCard(
                 name: 'Yousap Ramsis',
                 id: '212103743',
-                color: Color(0xFFFFB4B4)),
+                color: Color.fromARGB(255, 36, 20, 177)),
             TeamMemberCard(
                 name: 'Mena Nabil',
-                id: '212103454',
-                color: Color(0xFFB4BDFF)),
+                id: '212102875',
+                color: Color.fromARGB(255, 178, 180, 27)),
             TeamMemberCard(
-                name: 'Ahmed Mohamed',
+                name: 'Abdelrahman fekry',
                 id: '212103755',
-                color: Color(0xFF7DFF9D)),
+                color: Color.fromARGB(255, 7, 165, 46)),
             TeamMemberCard(
-                name: 'Sara Mahmoud',
+                name: 'Mohamed Gamal',
                 id: '212103766',
-                color: Color(0xFFFFD700)),
+                color: Color.fromARGB(255, 150, 205, 212)),
             TeamMemberCard(
-                name: 'Omar Ali',
-                id: '212103777',
-                color: Color(0xFFFF69B4)),
+                name: 'Eslam Mohamed', id: '212102936', color: Color.fromARGB(255, 7, 1, 63)),
             TeamMemberCard(
-                name: 'Fatma Hassan',
-                id: '212103788',
+                name: 'Eslam Ashraf',
+                id: '212102875',
                 color: Color(0xFF20B2AA)),
             TeamMemberCard(
-                name: 'Khaled Ibrahim',
-                id: '212103799',
-                color: Color(0xFFDA70D6)),
+                name: 'Asia Khaled',
+                id: '212106362',
+                color: Color.fromARGB(255, 253, 67, 247)),
             TeamMemberCard(
-                name: 'Lina Samir',
-                id: '212103800',
-                color: Color(0xFF32CD32)),
+                name: 'Jumana Ali',
+                id: '212100673',
+                color: Color.fromARGB(255, 209, 6, 6)),
           ],
         ),
       ],
@@ -266,18 +264,14 @@ class SupervisorInfoCard extends StatelessWidget {
             name,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: color),
+                fontSize: 18, fontWeight: FontWeight.bold, color: color),
           ),
           const SizedBox(height: 10),
           Text(
             title,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 14,
-              color: color.withOpacity(0.8),
-              height: 1.4),
+                fontSize: 14, color: color.withOpacity(0.8), height: 1.4),
           ),
         ],
       ),
@@ -318,16 +312,12 @@ class TeamMemberCard extends StatelessWidget {
           Text(
             name,
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: color),
+                fontSize: 16, fontWeight: FontWeight.w600, color: color),
           ),
           const SizedBox(height: 8),
           Text(
             'ID: $id',
-            style: TextStyle(
-              fontSize: 14,
-              color: color.withOpacity(0.8)),
+            style: TextStyle(fontSize: 14, color: color.withOpacity(0.8)),
           ),
         ],
       ),
@@ -342,10 +332,7 @@ class DisclaimerText extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Text(
       'This application is for educational and informational purposes only and should not be considered as a substitute for professional medical advice. Always consult with a qualified healthcare provider for any health concerns.',
-      style: TextStyle(
-        fontSize: 14,
-        color: Colors.grey,
-        height: 1.5),
+      style: TextStyle(fontSize: 14, color: Colors.grey, height: 1.5),
       textAlign: TextAlign.center,
     );
   }

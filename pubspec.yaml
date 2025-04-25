@@ -87,6 +87,8 @@ flutter:
   - assets/assets/modelaferconvert.tflite
   - assets/assets/Heart.tflite
   - assets/assets/diabetes_model_fixed.tflite
+  - assets/assets/hypertension_model.tflite
+
 
 
   #   - images/a_dot_burr.jpeg

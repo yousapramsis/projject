@@ -72,7 +72,7 @@ class PositiveResultPage extends StatelessWidget {
               
               const SizedBox(height: 25),
               const Text(
-                'Warning: Potential Diabetes Risk Detected',
+                'Warning: Potential Heart diseases Risk Detected',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -82,7 +82,7 @@ class PositiveResultPage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Text(
-                'Diabetes is a serious condition that requires prompt medical attention. Early diagnosis and management are crucial for preventing complications.',
+                'Heart diseases are serious conditions that require prompt medical attention. Early diagnosis and management are crucial for preventing complications.',
                 style: TextStyle(fontSize: 17, color: Colors.grey[800], height: 1.5),
                 textAlign: TextAlign.center,
               ),
