@@ -100,10 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         title: Text(widget.title),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () => _showUnderDevelopment(context),
-          ),
+          
           IconButton(
             icon: const Icon(Icons.info_outline),
             onPressed: () => Navigator.push(
@@ -219,14 +216,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void _showUnderDevelopment(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Feature coming soon!'),
-        duration: Duration(seconds: 1),
-      ),
-    );
-  }
+ 
 
   // Helper method to build each slide item
   Widget buildSlideItem(int index) {
