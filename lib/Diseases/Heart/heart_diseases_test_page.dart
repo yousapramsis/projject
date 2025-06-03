@@ -1,10 +1,125 @@
-// heart_disease_test_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:project_grad/l10n/app_localizations.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
-// Import the PositiveResultPage for navigation when risk is positive
-import 'heart_result.dart';
 
+class PositiveResultPage extends StatelessWidget {
+  final String condition;
+  const PositiveResultPage({Key? key, required this.condition})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    String title;
+    switch (condition) {
+      case 'heart':
+        title = loc.heart_disease_advice;
+        break;
+      case 'diabetes':
+        title = loc.diabetes_advice;
+        break;
+      case 'hypertension':
+        title = loc.hypertension_advice;
+        break;
+      default:
+        title = loc.important_health_advice;
+    }
+
+    return Directionality(
+      textDirection:
+          loc.isRtl == "true" ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(title),
+          centerTitle: true,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF6C63FF), Color(0xFF4A90E2)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
+          iconTheme: const IconThemeData(color: Colors.white),
+        ),
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFFF8F9FF), Color(0xFFE6E9FF)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.health_and_safety,
+                    size: 60, color: Color(0xFF6C63FF)),
+                const SizedBox(height: 20),
+                Text(
+                  loc.heart_health_recommendations,
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 20),
+                _buildAdviceCard(
+                  context,
+                  Icons.restaurant,
+                  loc.healthy_diet_title,
+                  loc.healthy_diet_description,
+                ),
+                _buildAdviceCard(
+                  context,
+                  Icons.directions_run,
+                  loc.exercise_title,
+                  loc.exercise_description,
+                ),
+                _buildAdviceCard(
+                  context,
+                  Icons.medical_services,
+                  loc.consult_doctor_title,
+                  loc.consult_doctor_description,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAdviceCard(
+      BuildContext context, IconData icon, String title, String description) {
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: const Color(0xFF6C63FF), size: 30),
+                const SizedBox(width: 12),
+                Text(title,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(description, style: const TextStyle(fontSize: 16)),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class HeartDiseasesTestPage extends StatefulWidget {
   const HeartDiseasesTestPage({Key? key}) : super(key: key);
@@ -16,8 +131,6 @@ class HeartDiseasesTestPage extends StatefulWidget {
 class _HeartDiseaseTestPageState extends State<HeartDiseasesTestPage>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-
-  // Controllers for numeric inputs
   final TextEditingController ageController = TextEditingController();
   final TextEditingController cigsController = TextEditingController();
   final TextEditingController totCholController = TextEditingController();
@@ -27,25 +140,19 @@ class _HeartDiseaseTestPageState extends State<HeartDiseasesTestPage>
   final TextEditingController heartRateController = TextEditingController();
   final TextEditingController glucoseController = TextEditingController();
 
-  // Gender dropdown (Male = 1, Female = 0)
   String? _gender;
-  // Boolean switches for binary values
   bool isSmoker = false;
   bool bpmeds = false;
   bool hasDiabetes = false;
-
-  String result = ''; // Stores the result text, now includes percentage
-  double probabilityValue = 0.0; // Stores the raw probability (0.0 to 1.0)
-  bool _isPositiveResult = false; // <-- NEW: Flag to track if the result is Positive
-
+  String result = '';
+  double probabilityValue = 0.0;
+  bool _isPositiveResult = false;
   late Interpreter _interpreter;
   bool _isModelLoaded = false;
   bool _isProcessing = false;
-  late AnimationController _animationController; // For result display animation
-  late Animation<double> _resultAnimation; // For result display animation
-
-  // Update asset path if necessary
-  final String _modelPath = 'assets/assets/Heart.tflite'; // Ensure this path is correct
+  late AnimationController _animationController;
+  late Animation<double> _resultAnimation;
+  final String _modelPath = 'assets/assets/Heart.tflite';
 
   @override
   void initState() {
@@ -64,10 +171,7 @@ class _HeartDiseaseTestPageState extends State<HeartDiseasesTestPage>
   @override
   void dispose() {
     _animationController.dispose();
-    // Dispose the interpreter only if it was successfully loaded and assigned
-    if (_isModelLoaded && _interpreter != null) {
-      _interpreter.close();
-    }
+    if (_isModelLoaded) _interpreter.close();
     ageController.dispose();
     cigsController.dispose();
     totCholController.dispose();
@@ -81,41 +185,41 @@ class _HeartDiseaseTestPageState extends State<HeartDiseasesTestPage>
 
   Future<void> _initializeModel() async {
     try {
-      // Update the asset path as needed.
       final interpreter = await Interpreter.fromAsset(
         _modelPath,
         options: InterpreterOptions()..threads = 4,
       );
       final inputTensors = interpreter.getInputTensors();
-      // Expecting input shape [1, 12]
-      if (inputTensors.isEmpty || inputTensors[0].shape.isEmpty || inputTensors[0].shape[1] != 12) {
-        throw Exception('Invalid input shape. Expected [1, 12]');
+      if (inputTensors.isEmpty || inputTensors[0].shape[1] != 12) {
+        throw Exception('Invalid input shape');
       }
-      _interpreter = interpreter; // Assign only on success
+      _interpreter = interpreter;
       setState(() => _isModelLoaded = true);
-      print('Heart disease model loaded successfully from $_modelPath!');
     } catch (e) {
       setState(() {
-        result = 'Model Load Error: ${e.toString()}'; // Set error message to result
+        // Fix: Using string instead of function for error message
+        result = 'Model Load Error: ${e.toString()}';
         _isModelLoaded = false;
       });
-      print('Model loading error from $_modelPath: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildGradientAppBar(),
-      body: buildBody(),
+    return Directionality(
+      textDirection: AppLocalizations.of(context)!.isRtl == "true"
+          ? TextDirection.rtl
+          : TextDirection.ltr,
+      child: Scaffold(
+        appBar: _buildGradientAppBar(),
+        body: _buildBody(),
+      ),
     );
   }
 
   AppBar _buildGradientAppBar() {
     return AppBar(
-      title: const Text('Heart Disease Risk Assessment',
-          style: TextStyle(
-              fontSize: 22, fontWeight: FontWeight.w600, color: Colors.white)),
+      title: Text(AppLocalizations.of(context)!.heart_disease_risk_assess),
       centerTitle: true,
       flexibleSpace: Container(
         decoration: const BoxDecoration(
@@ -126,11 +230,11 @@ class _HeartDiseaseTestPageState extends State<HeartDiseasesTestPage>
           ),
         ),
       ),
-      iconTheme: const IconThemeData(color: Colors.white), // Added for back button color
+      iconTheme: const IconThemeData(color: Colors.white),
     );
   }
 
-  Widget buildBody() {
+  Widget _buildBody() {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -149,26 +253,14 @@ class _HeartDiseaseTestPageState extends State<HeartDiseasesTestPage>
               children: [
                 _buildHeader(),
                 const SizedBox(height: 30),
-                _buildInputSection(), // Contains inputs and Predict button
-                const SizedBox(height: 30),
-
-                // Show model error if it failed to load
-                 if (!_isModelLoaded && result.isNotEmpty && result.startsWith('Model Load Error')) ...[
-                     _buildModelError(), // Use the specific error builder
-                     const SizedBox(height: 20), // Add spacing
-                 ],
-
-                _buildResultDisplay(), // Displays the prediction result and probability
-
-                // --- Conditional Continue Button ---
-                // Show button ONLY if the _isPositiveResult flag is true
-                if (_isPositiveResult) ...[ // <-- Use the boolean flag
-                    const SizedBox(height:25),
-                    _buildContinueButton(), // <-- Call the button widget
+                _buildInputSection(),
+                if (!_isModelLoaded && result.isNotEmpty) _buildModelError(),
+                _buildResultDisplay(),
+                if (_isPositiveResult) ...[
+                  const SizedBox(height: 25),
+                  _buildContinueButton(),
                 ],
-                // --- End Conditional Button ---
-
-                 const SizedBox(height: 20), // Padding at the bottom
+                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -183,20 +275,22 @@ class _HeartDiseaseTestPageState extends State<HeartDiseasesTestPage>
         const Icon(Icons.favorite, size: 70, color: Color(0xFF6C63FF)),
         const SizedBox(height: 20),
         Text(
-          'Heart Disease Risk Assessment',
+          AppLocalizations.of(context)!.heart_disease_risk_assess,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF2D2D3A),
-                letterSpacing: 1.2,
               ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
         Text(
-          'Provide accurate health information for reliable results',
+          AppLocalizations.of(context)!.provide_health_info,
           style: TextStyle(
-              fontSize: 16, color: Colors.grey[600], height: 1.5),
+            fontSize: 16,
+            color: Colors.grey[600],
+            height: 1.5,
+          ),
           textAlign: TextAlign.center,
         ),
       ],
@@ -220,90 +314,9 @@ class _HeartDiseaseTestPageState extends State<HeartDiseasesTestPage>
       child: Column(
         children: [
           _buildGenderDropdown(),
-          const SizedBox(height: 20),
-          _buildNumberInput(
-            controller: ageController,
-            label: 'Age',
-            icon: Icons.cake,
-            validatorMin: 0,
-            validatorMax: 120,
-          ),
-          const SizedBox(height: 20),
-          _buildSwitchInput('Current Smoker', isSmoker, (bool value) {
-            setState(() {
-              isSmoker = value;
-            });
-          }),
-          const SizedBox(height: 20),
-          _buildNumberInput(
-            controller: cigsController,
-            label: 'Cigarettes Per Day',
-            icon: Icons.smoking_rooms,
-            validatorMin: 0,
-            validatorMax: 100,
-          ),
-          const SizedBox(height: 20),
-          _buildSwitchInput('BP Medication', bpmeds, (bool value) {
-            setState(() {
-              bpmeds = value;
-            });
-          }),
-          const SizedBox(height: 20),
-          _buildSwitchInput('Diabetes', hasDiabetes, (bool value) {
-            setState(() {
-              hasDiabetes = value;
-            });
-          }),
-          const SizedBox(height: 20),
-          _buildNumberInput(
-            controller: totCholController,
-            label: 'Total Cholesterol (mg/dL)',
-            icon: Icons.water_drop,
-            validatorMin: 100,
-            validatorMax: 500,
-          ),
-          const SizedBox(height: 20),
-          _buildNumberInput(
-            controller: sysBPController,
-            label: 'Systolic BP (mm Hg)',
-            icon: Icons.monitor_heart,
-            validatorMin: 80,
-            validatorMax: 250,
-          ),
-          const SizedBox(height: 20),
-          _buildNumberInput(
-            controller: diaBPController,
-            label: 'Diastolic BP (mm Hg)',
-            icon: Icons.monitor_heart,
-            validatorMin: 40,
-            validatorMax: 150,
-          ),
-          const SizedBox(height: 20),
-          _buildNumberInput(
-            controller: bmiController,
-            label: 'BMI',
-            icon: Icons.fitness_center,
-            validatorMin: 10,
-            validatorMax: 60,
-          ),
-          const SizedBox(height: 20),
-          _buildNumberInput(
-            controller: heartRateController,
-            label: 'Heart Rate (bpm)',
-            icon: Icons.speed,
-            validatorMin: 30,
-            validatorMax: 200,
-          ),
-          const SizedBox(height: 20),
-          _buildNumberInput(
-            controller: glucoseController,
-            label: 'Glucose (mg/dL)',
-            icon: Icons.opacity,
-            validatorMin: 50,
-            validatorMax: 500,
-          ),
+          _buildNumberInputs(),
           const SizedBox(height: 30),
-          _buildPredictButton(), // Button is inside the input section
+          _buildPredictButton(),
         ],
       ),
     );
@@ -313,33 +326,93 @@ class _HeartDiseaseTestPageState extends State<HeartDiseasesTestPage>
     return DropdownButtonFormField<String>(
       value: _gender,
       decoration: InputDecoration(
-        labelText: 'Gender',
-        labelStyle: const TextStyle(color: Colors.black87),
-        prefixIcon:
-            const Icon(Icons.person_outline, color: Color(0xFF6C63FF)),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide.none,
-        ),
+        labelText: AppLocalizations.of(context)!.gender,
+        prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF6C63FF)),
         filled: true,
         fillColor: const Color(0xFFF8F9FF),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Color(0xFF6C63FF)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
       ),
-      items: const [
-        DropdownMenuItem(value: 'Male', child: Text('Male')),
-        DropdownMenuItem(value: 'Female', child: Text('Female')),
+      items: [
+        DropdownMenuItem(
+          value: 'Male',
+          child: Text(AppLocalizations.of(context)!.gender_male),
+        ),
+        DropdownMenuItem(
+          value: 'Female',
+          child: Text(AppLocalizations.of(context)!.gender_female),
+        ),
       ],
-      validator: (value) => value == null ? 'Please select gender' : null,
-      onChanged: (value) => setState(() {
-        _gender = value;
-      }),
+      validator: (value) =>
+          value == null ? AppLocalizations.of(context)!.required_field : null,
+      onChanged: (value) => setState(() => _gender = value),
+    );
+  }
+
+  Widget _buildNumberInputs() {
+    return Column(
+      children: [
+        _buildNumberInput(
+          controller: ageController,
+          label: AppLocalizations.of(context)!.age,
+          icon: Icons.cake,
+          validatorMin: 0,
+          validatorMax: 120,
+        ),
+        _buildSwitchInput(AppLocalizations.of(context)!.current_smoker,
+            isSmoker, (v) => setState(() => isSmoker = v)),
+        _buildNumberInput(
+          controller: cigsController,
+          label: AppLocalizations.of(context)!.cigarettes_per_day,
+          icon: Icons.smoking_rooms,
+          validatorMin: 0,
+          validatorMax: 100,
+        ),
+        _buildSwitchInput(AppLocalizations.of(context)!.bp_medication, bpmeds,
+            (v) => setState(() => bpmeds = v)),
+        _buildSwitchInput(AppLocalizations.of(context)!.diabetes, hasDiabetes,
+            (v) => setState(() => hasDiabetes = v)),
+        _buildNumberInput(
+          controller: totCholController,
+          label: AppLocalizations.of(context)!.total_cholesterol,
+          icon: Icons.water_drop,
+          validatorMin: 100,
+          validatorMax: 500,
+        ),
+        _buildNumberInput(
+          controller: sysBPController,
+          label: AppLocalizations.of(context)!.systolic_bp,
+          icon: Icons.monitor_heart,
+          validatorMin: 80,
+          validatorMax: 250,
+        ),
+        _buildNumberInput(
+          controller: diaBPController,
+          label: AppLocalizations.of(context)!.diastolic_bp,
+          icon: Icons.monitor_heart,
+          validatorMin: 40,
+          validatorMax: 150,
+        ),
+        _buildNumberInput(
+          controller: bmiController,
+          label: AppLocalizations.of(context)!.bmi,
+          icon: Icons.fitness_center,
+          validatorMin: 10,
+          validatorMax: 60,
+        ),
+        _buildNumberInput(
+          controller: heartRateController,
+          label: AppLocalizations.of(context)!.heart_rate,
+          icon: Icons.speed,
+          validatorMin: 30,
+          validatorMax: 200,
+        ),
+        _buildNumberInput(
+          controller: glucoseController,
+          label: AppLocalizations.of(context)!.glucose,
+          icon: Icons.opacity,
+          validatorMin: 50,
+          validatorMax: 500,
+        ),
+      ],
     );
   }
 
@@ -350,91 +423,69 @@ class _HeartDiseaseTestPageState extends State<HeartDiseasesTestPage>
     required double validatorMin,
     required double validatorMax,
   }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.black87),
-        prefixIcon: Icon(icon, color: const Color(0xFF6C63FF)),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide.none,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon, color: const Color(0xFF6C63FF)),
+          suffixIcon: IconButton(
+            icon: const Icon(Icons.info_outline, color: Colors.grey),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: Text(AppLocalizations.of(context)!.normal_range),
+                  content: Text(
+                    '${AppLocalizations.of(context)!.normal_range_for} "$label":\n'
+                    '${validatorMin.toStringAsFixed(0)} - ${validatorMax.toStringAsFixed(0)}',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(AppLocalizations.of(context)!.ok),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          filled: true,
+          fillColor: const Color(0xFFF8F9FF),
         ),
-        filled: true,
-        fillColor: const Color(0xFFF8F9FF),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Color(0xFF6C63FF)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Colors.red),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Colors.red),
-        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return AppLocalizations.of(context)!.required_field;
+          }
+          final numValue = double.tryParse(value);
+          if (numValue == null) {
+            return AppLocalizations.of(context)!.invalid_number;
+          }
+          if (numValue < validatorMin || numValue > validatorMax) {
+            return '${AppLocalizations.of(context)!.must_be_between} '
+                '${validatorMin.toStringAsFixed(0)} '
+                '${AppLocalizations.of(context)!.and_text} '
+                '${validatorMax.toStringAsFixed(0)}';
+          }
+          return null;
+        },
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))
+        ],
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) return 'Please enter a value';
-        final numValue = double.tryParse(value);
-        if (numValue == null) return 'Invalid number';
-        if (numValue < validatorMin || numValue > validatorMax)
-          return 'Value must be between ${validatorMin.toStringAsFixed(0)} and ${validatorMax.toStringAsFixed(0)}';
-        return null;
-      },
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))
-      ],
     );
   }
 
   Widget _buildSwitchInput(String label, bool value, Function(bool) onChanged) {
-     return SwitchListTile(
-      title: Text(label, style: const TextStyle(color: Colors.black87)), // Ensure text color
+    return SwitchListTile(
+      title: Text(label),
       value: value,
       activeColor: const Color(0xFF6C63FF),
-      inactiveTrackColor: Colors.grey.shade300,
-      contentPadding: EdgeInsets.zero, // Remove default padding
       onChanged: onChanged,
     );
   }
-
-  // --- NEW Continue Button Widget ---
-  Widget _buildContinueButton() {
-    return ElevatedButton(
-      onPressed: () {
-        // Navigate to the PositiveResultPage (same advice page as diabetes/hypertension)
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const PositiveResultPage()),
-        );
-      },
-       style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 35),
-        backgroundColor: Colors.orangeAccent, // Consistent color with other pages
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        elevation: 6,
-        shadowColor: Colors.orangeAccent.withOpacity(0.4),
-      ),
-      child: const Text(
-        'Continue for Advice',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 1.1,
-          color: Colors.white // Ensure text color is white
-        ),
-      ),
-    );
-  }
-  // --- End NEW Continue Button Widget ---
-
 
   Widget _buildPredictButton() {
     return ElevatedButton(
@@ -442,214 +493,181 @@ class _HeartDiseaseTestPageState extends State<HeartDiseasesTestPage>
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 40),
         backgroundColor: const Color(0xFF6C63FF),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15)),
-        elevation: 8,
-        shadowColor: const Color(0xFF6C63FF).withOpacity(0.5),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       ),
       child: _isProcessing
-          ? const SizedBox(
-              width: 25,
-              height: 25,
-              child: CircularProgressIndicator(
-                  strokeWidth: 3, color: Colors.white))
-          : const Text('Check Risk',
-              style: TextStyle(
+          ? const CircularProgressIndicator(color: Colors.white)
+          : Text(
+              AppLocalizations.of(context)!.check_risk,
+              style: const TextStyle(
                   fontSize: 18,
-                  letterSpacing: 1.2,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white)), // Ensure text color is white
+                  color: Colors.white),
+            ),
     );
   }
 
-  // --- Modified _buildResultDisplay ---
   Widget _buildResultDisplay() {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 500),
-      transitionBuilder: (Widget child, Animation<double> animation) {
-        return ScaleTransition(
-          scale: animation,
-          child: FadeTransition(
-            opacity: animation,
-            child: child,
-          ),
-        );
-      },
-       // Show the result box only if result is not empty AND not a model error
       child: result.isNotEmpty && !result.startsWith('Model Load Error')
           ? Container(
-              key: ValueKey<String>(result), // Key based on the result string for animation
+              key: ValueKey<String>(result),
               padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(
-                // Use color based on the _isPositiveResult flag
                 color: _getResultColor(_isPositiveResult).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                    color: _getResultColor(_isPositiveResult), // Use color based on flag
-                    width: 2),
+                    color: _getResultColor(_isPositiveResult), width: 2),
               ),
               child: Column(
                 children: [
                   Icon(
-                     // Choose icon based on the _isPositiveResult flag
                     _isPositiveResult
                         ? Icons.warning_amber_rounded
                         : Icons.check_circle,
-                    color: _getResultColor(_isPositiveResult), // Use color based on flag
+                    color: _getResultColor(_isPositiveResult),
                     size: 60,
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    result, // Display the result string (includes percentage)
+                    result,
                     style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: _getResultColor(_isPositiveResult)), // Use color based on flag
-                     textAlign: TextAlign.center, // Center align text
+                        color: _getResultColor(_isPositiveResult)),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 12),
                   LinearProgressIndicator(
                     value: probabilityValue,
                     backgroundColor: Colors.grey.shade300,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(_getResultColor(_isPositiveResult)), // Use color based on flag
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        _getResultColor(_isPositiveResult)),
                     minHeight: 12,
-                    borderRadius: BorderRadius.circular(8),
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Probability: ${(probabilityValue * 100).toStringAsFixed(2)}%',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey[700]),
-                    textAlign: TextAlign.center,
+                    '${AppLocalizations.of(context)!.probability}: '
+                    '${(probabilityValue * 100).toStringAsFixed(2)}%',
+                    style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                   ),
                 ],
               ),
             )
-          : const SizedBox.shrink(), // Show nothing when result is empty or a model error
+          : const SizedBox.shrink(),
     );
   }
-  // --- End Modified _buildResultDisplay ---
 
-
-  // --- Modified _getResultColor to accept boolean ---
-  Color _getResultColor(bool isPositive) {
-    if (isPositive) {
-      return Colors.red; // Red for Positive
-    } else {
-      return Colors.green; // Green for Negative
-    }
+  Widget _buildContinueButton() {
+    return ElevatedButton(
+      onPressed: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => const PositiveResultPage(
+                  condition: 'hypertension',
+                )),
+      ),
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 35),
+        backgroundColor: Colors.orangeAccent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      ),
+      child: Text(
+        AppLocalizations.of(context)!.continue_advice,
+        style: const TextStyle(
+            fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+      ),
+    );
   }
-  // --- End Modified _getResultColor ---
 
+  Color _getResultColor(bool isPositive) {
+    return isPositive ? Colors.red : Colors.green;
+  }
 
   Widget _buildModelError() {
-     // This widget is specifically for the initial model *loading* error
-     return Center(
-       child: Padding(
-         padding: const EdgeInsets.symmetric(vertical: 20),
-         child: Text(
-           result.isNotEmpty ? result : 'Loading Heart Disease model...', // Show the error message from state, or loading text
-           style: const TextStyle(
-             fontSize: 18,
-             color: Colors.redAccent,
-             fontWeight: FontWeight.bold,
-           ),
-           textAlign: TextAlign.center,
-         ),
-       ),
-     );
-   }
-
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Text(
+          result,
+          style: const TextStyle(
+              fontSize: 18,
+              color: Colors.redAccent,
+              fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
 
   Future<void> _handlePrediction() async {
-    // Clear previous result and state, start processing indicator
     setState(() {
       _isProcessing = true;
-      result = ''; // Clear result text
-      probabilityValue = 0.0; // Reset probability
-      _isPositiveResult = false; // <-- Reset the flag
-      _animationController.reset(); // Reset animation
+      result = '';
+      probabilityValue = 0.0;
+      _isPositiveResult = false;
+      _animationController.reset();
     });
 
-    // Add a small delay to allow UI to update before potentially blocking
     await Future.delayed(const Duration(milliseconds: 50));
 
-    // Validate form
     if (!_formKey.currentState!.validate()) {
-       setState(() {
-         _isProcessing = false; // Stop processing if validation fails
-      });
-      return; // Stop if validation fails
+      setState(() => _isProcessing = false);
+      return;
     }
 
-     // Check if model is loaded before running inference
-    if (!_isModelLoaded || _interpreter == null) {
-         setState(() {
-           result = 'Error: Model not loaded. Cannot predict.'; // Update result for prediction failure
-           _isProcessing = false;
-         });
-         return;
+    if (!_isModelLoaded) {
+      setState(() {
+        // Fix: Using string concatenation instead of replaceAll
+        result = 'Model Load Error: Model not loaded';
+        _isProcessing = false;
+      });
+      return;
     }
 
     try {
-      // Collect the 12 inputs in the required order:
-      // [gender, age, currentSmoker, cigsPerDay, BPMeds, diabetes, totChol, sysBP, diaBP, BMI, heartRate, glucose]
-      // **CRITICAL: Ensure this order exactly matches the input layer of your TFLite model!**
-      final rawInputs = [
-        _gender == 'Male' ? 1.0 : 0.0, // Assuming Male is 1.0, Female is 0.0
-        double.parse(ageController.text),
-        isSmoker ? 1.0 : 0.0,
-        double.parse(cigsController.text),
-        bpmeds ? 1.0 : 0.0,
-        hasDiabetes ? 1.0 : 0.0,
-        double.parse(totCholController.text),
-        double.parse(sysBPController.text),
-        double.parse(diaBPController.text),
-        double.parse(bmiController.text),
-        double.parse(heartRateController.text),
-        double.parse(glucoseController.text),
+      final input = [
+        [
+          _gender == 'Male' ? 1.0 : 0.0,
+          double.parse(ageController.text),
+          isSmoker ? 1.0 : 0.0,
+          double.parse(cigsController.text),
+          bpmeds ? 1.0 : 0.0,
+          hasDiabetes ? 1.0 : 0.0,
+          double.parse(totCholController.text),
+          double.parse(sysBPController.text),
+          double.parse(diaBPController.text),
+          double.parse(bmiController.text),
+          double.parse(heartRateController.text),
+          double.parse(glucoseController.text),
+        ]
       ];
 
-      // Your model might expect scaled inputs. Check how it was trained.
-      // If it expects raw inputs, remove the scaling step.
-      // If it expects scaled inputs (like with StandardScaler or MinMaxScaler), implement the correct scaling here.
-      // For now, assuming raw inputs based on the structure, but be cautious.
-      final input = [rawInputs]; // Model expects shape [1, 12]
-
-      // TFLite output buffer, expecting a single probability value [1, 1]
       final output = List.filled(1, 0.0).reshape([1, 1]);
       _interpreter.run(input, output);
 
-      final probability = output[0][0]; // Get the single probability value
+      final probability = output[0][0];
+      final isPositive = probability >= 0.5;
+      final percentage = (probability * 100).toStringAsFixed(2);
 
-      // Determine boolean result and probability percentage for display
-      final isPositive = probability >= 0.5; // <-- Use your model's probability threshold (e.g., 0.5)
-      final probabilityPercentage = (probability * 100).toStringAsFixed(2);
-      final resultText = isPositive
-          ? 'Positive'
-          : 'Negative';
-
-
-      // Update state with final result, probability, and the boolean flag
       setState(() {
-        probabilityValue = probability; // Store raw probability
-        result = '$resultText ($probabilityPercentage%)'; // Set the result string including percentage
-        _isPositiveResult = isPositive; // <-- Set the boolean flag based on prediction
+        probabilityValue = probability;
+        result = isPositive
+            ? '${AppLocalizations.of(context)!.positive} ($percentage%)'
+            : '${AppLocalizations.of(context)!.negative} ($percentage%)';
+        _isPositiveResult = isPositive;
       });
 
-      _animationController.forward(); // Start the result animation
-
+      _animationController.forward();
     } catch (e) {
       setState(() {
-         result = 'Prediction failed: ${e.toString()}'; // Show error in result area
-         _isPositiveResult = false; // Ensure flag is false on error
+        result =
+            '${AppLocalizations.of(context)!.error_occurred}: ${e.toString()}';
+        _isPositiveResult = false;
       });
-      print("Prediction error: $e");
     } finally {
-      setState(() => _isProcessing = false); // Always stop processing
+      setState(() => _isProcessing = false);
     }
   }
 }

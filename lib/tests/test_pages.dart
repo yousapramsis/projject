@@ -1,47 +1,64 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:project_grad/l10n/app_localizations.dart' show AppLocalizations;
 
 class DiabetesTestPage extends StatelessWidget {
   const DiabetesTestPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Diabetes Test'),
+        title: Text(loc.diabetes_symptoms),
         centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: ListView( // Use ListView for scrolling if content overflows
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Diabetes Risk Factors',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              loc.diabetes_risk_assess,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 16),
-            DiabetesParameterCard(
-              title: 'Fasting Blood Sugar',
-              description: 'Normal range: 70-100 mg/dL',
-              icon: Icons.bloodtype,
+            Text(loc.symptoms_check),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView(
+                children: [
+                  _buildCheckbox(loc.frequent_urination),
+                  _buildCheckbox(loc.excessive_thirst),
+                  _buildCheckbox(loc.unexplained_weight_loss),
+                  _buildCheckbox(loc.extreme_hunger),
+                  _buildCheckbox(loc.blurred_vision),
+                  _buildCheckbox(loc.increased_fatigue),
+                  _buildCheckbox(loc.slow_healing),
+                  _buildCheckbox(loc.frequent_infections),
+                  _buildCheckbox(loc.numbness),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            DiabetesParameterCard(
-              title: 'HbA1c Level',
-              description: 'Normal range: Below 5.7%',
-              icon: Icons.analytics,
+            const SizedBox(height: 20),
+            Text(loc.result_message),
+            Text(loc.result_instruction),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {},
+              child: Text(loc.check_risk),
             ),
-            const SizedBox(height: 12),
-            DiabetesParameterCard(
-              title: 'Family History',
-              description: 'Assess your family history of diabetes.',
-              icon: Icons.family_restroom,
-            ),
-            // Add more parameters as needed
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCheckbox(String title) {
+    return CheckboxListTile(
+      title: Text(title),
+      value: false,
+      onChanged: (bool? value) {},
     );
   }
 }
@@ -51,234 +68,113 @@ class HypertensionTestPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hypertension Test'),
+        title: Text(loc.hypertension_symptoms),
         centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: ListView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Hypertension Risk Factors',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
+              loc.hypertension_symptoms,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 16),
+            Text(loc.symptoms_check),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView(
+                children: [
+                  _buildCheckbox(loc.severe_headaches),
+                  _buildCheckbox(loc.fatigue_confusion),
+                  _buildCheckbox(loc.vision_problems),
+                  _buildCheckbox(loc.chest_pain),
+                  _buildCheckbox(loc.difficulty_breathing),
+                  _buildCheckbox(loc.irregular_heartbeat),
+                  _buildCheckbox(loc.blood_urine),
+                  _buildCheckbox(loc.pounding),
+                  _buildCheckbox(loc.nosebleeds),
+                ],
               ),
             ),
             const SizedBox(height: 16),
-            HypertensionParameterCard(
-              title: 'Blood Pressure Reading',
-              description: 'Normal: Less than 120/80 mmHg',
-              icon: Icons.monitor_heart,
+            ElevatedButton(
+              onPressed: () {},
+              child: Text(loc.check_risk),
             ),
-            const SizedBox(height: 12),
-            HypertensionParameterCard(
-              title: 'Age',
-              description: 'Risk increases with age',
-              icon: Icons.calendar_today,
-            ),
-            const SizedBox(height: 12),
-            HypertensionParameterCard(
-              title: 'Lifestyle',
-              description: 'Diet, exercise, smoking habits',
-              icon: Icons.fitness_center,
-            ),
-            // Add more parameters as needed
           ],
         ),
       ),
     );
   }
+
+  Widget _buildCheckbox(String title) {
+    return CheckboxListTile(
+      title: Text(title),
+      value: false,
+      onChanged: (bool? value) {},
+    );
+  }
 }
 
-class HeartDiseasesTestPage extends StatelessWidget {
-  const HeartDiseasesTestPage({Key? key}) : super(key: key);
+class HeartDiseaseTestPage extends StatelessWidget {
+  const HeartDiseaseTestPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Heart Diseases Test'),
+        title: Text(loc.heart_disease_symptoms),
         centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: ListView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Heart Disease Risk Factors',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
+              loc.heart_disease_risk_assess,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 16),
+            Text(loc.symptoms_check),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView(
+                children: [
+                  _buildCheckbox(loc.chest_pain_discomfort),
+                  _buildCheckbox(loc.shortness_breath),
+                  _buildCheckbox(loc.neck_jaw_pain),
+                  _buildCheckbox(loc.limb_pain_numbness),
+                  _buildCheckbox(loc.fluttering_chest),
+                  _buildCheckbox(loc.increased_fatigue),
+                  _buildCheckbox(loc.lightheadedness),
+                  _buildCheckbox(loc.swelling),
+                  _buildCheckbox(loc.irregular_heartbeat),
+                ],
               ),
             ),
             const SizedBox(height: 16),
-            HeartParameterCard(
-              title: 'Cholesterol Levels',
-              description: 'HDL, LDL, Total Cholesterol',
-              icon: Icons.water_drop,
-            ),
-            const SizedBox(height: 12),
-            HeartParameterCard(
-              title: 'Blood Pressure',
-              description: 'Systolic and Diastolic readings',
-              icon: Icons.favorite,
-            ),
-            const SizedBox(height: 12),
-            HeartParameterCard(
-              title: 'Smoking History',
-              description: 'Current or past smoker',
-              icon: Icons.smoking_rooms,
-            ),
-            // Add more parameters as needed
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// Custom Card Widgets for each test
-class DiabetesParameterCard extends StatelessWidget {
-  final String title;
-  final String description;
-  final IconData icon;
-
-  const DiabetesParameterCard({
-    Key? key,
-    required this.title,
-    required this.description,
-    required this.icon,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Icon(icon, size: 32, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    description,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
+            ElevatedButton(
+              onPressed: () {},
+              child: Text(loc.check_risk),
             ),
           ],
         ),
       ),
     );
   }
-}
 
-class HypertensionParameterCard extends StatelessWidget {
-  final String title;
-  final String description;
-  final IconData icon;
-
-  const HypertensionParameterCard({
-    Key? key,
-    required this.title,
-    required this.description,
-    required this.icon,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Icon(icon, size: 32, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    description,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class HeartParameterCard extends StatelessWidget {
-  final String title;
-  final String description;
-  final IconData icon;
-
-  const HeartParameterCard({
-    Key? key,
-    required this.title,
-    required this.description,
-    required this.icon,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Icon(icon, size: 32, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    description,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+  Widget _buildCheckbox(String title) {
+    return CheckboxListTile(
+      title: Text(title),
+      value: false,
+      onChanged: (bool? value) {},
     );
   }
 }

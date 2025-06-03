@@ -5,10 +5,12 @@ class HypertensionSymptomsScreen extends StatefulWidget {
   const HypertensionSymptomsScreen({Key? key}) : super(key: key);
 
   @override
-  _HypertensionSymptomsScreenState createState() => _HypertensionSymptomsScreenState();
+  _HypertensionSymptomsScreenState createState() =>
+      _HypertensionSymptomsScreenState();
 }
 
-class _HypertensionSymptomsScreenState extends State<HypertensionSymptomsScreen> {
+class _HypertensionSymptomsScreenState
+    extends State<HypertensionSymptomsScreen> {
   Map<String, bool> symptoms = {
     'Severe headaches': false,
     'Fatigue or confusion': false,

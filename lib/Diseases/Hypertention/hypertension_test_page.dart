@@ -28,13 +28,14 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
 
   String result = ''; // Stores the result text, now includes percentage
   double probabilityValue = 0.0; // Stores the raw probability (0.0 to 1.0)
-  bool _isHypertensive = false; // <-- NEW: Flag to track positive result
+  bool _isHypertensive = false; // Flag to track positive result
 
   late Interpreter _interpreter;
   bool _isModelLoaded = false;
   bool _isProcessing = false;
 
-  final String _modelPath = 'assets/assets/hypertension_model.tflite'; // Ensure this path is correct
+  final String _modelPath =
+      'assets/assets/hypertension_model.tflite'; // Ensure this path is correct
 
   @override
   void initState() {
@@ -56,23 +57,24 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
     super.dispose();
   }
 
-
   Future<void> _initializeModel() async {
     try {
       final interpreter = await Interpreter.fromAsset(
         _modelPath,
         options: InterpreterOptions()..threads = 4,
       );
-       // Basic check to see if it looks like a valid model
-      if (interpreter.getInputTensor(0).shape.isEmpty || interpreter.getOutputTensor(0).shape.isEmpty) {
-           throw Exception('Model seems empty or invalid.');
+      // Basic check to see if it looks like a valid model
+      if (interpreter.getInputTensor(0).shape.isEmpty ||
+          interpreter.getOutputTensor(0).shape.isEmpty) {
+        throw Exception('Model seems empty or invalid.');
       }
       _interpreter = interpreter; // Assign only on success
       setState(() => _isModelLoaded = true);
       print('Hypertension model loaded successfully from $_modelPath.');
     } catch (e) {
       setState(() {
-        result = 'Model Load Error: ${e.toString()}'; // Set error message to result
+        result =
+            'Model Load Error: ${e.toString()}'; // Set error message to result
         _isModelLoaded = false;
       });
       print('Error loading Hypertension model from $_modelPath: $e');
@@ -128,21 +130,23 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
                 const SizedBox(height: 30),
 
                 // Show model error if it failed to load
-                 if (!_isModelLoaded && result.isNotEmpty && result.startsWith('Model Load Error')) ...[
-                     _buildModelError(), // Use the specific error builder
-                     const SizedBox(height: 20), // Add spacing
-                 ],
+                if (!_isModelLoaded &&
+                    result.isNotEmpty &&
+                    result.startsWith('Model Load Error')) ...[
+                  _buildModelError(), // Use the specific error builder
+                  const SizedBox(height: 20), // Add spacing
+                ],
 
                 _buildResultDisplay(), // Displays the prediction result and probability
 
                 // --- Conditional Continue Button ---
                 // Show button ONLY if the _isHypertensive flag is true
-                if (_isHypertensive) ...[ // <-- Check the boolean flag
-                    const SizedBox(height:25),
-                    _buildContinueButton(),
+                if (_isHypertensive) ...[
+                  const SizedBox(height: 25),
+                  _buildContinueButton(),
                 ],
-                 // --- End Conditional Button ---
-                 const SizedBox(height: 20), // Padding at the bottom
+                // --- End Conditional Button ---
+                const SizedBox(height: 20), // Padding at the bottom
               ],
             ),
           ),
@@ -169,8 +173,7 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
         const SizedBox(height: 12),
         Text(
           'Enter your health metrics for an assessment',
-          style: TextStyle(
-              fontSize: 16, color: Colors.grey[600], height: 1.5),
+          style: TextStyle(fontSize: 16, color: Colors.grey[600], height: 1.5),
           textAlign: TextAlign.center,
         ),
       ],
@@ -206,6 +209,7 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
             icon: Icons.cake,
             validatorMin: 0,
             validatorMax: 120,
+            normalRange: '0 - 120 years',
           ),
           const SizedBox(height: 20),
           _buildDropdown(
@@ -213,6 +217,7 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
             value: _smoking,
             items: ['Never', 'Formerly', 'Smokes'],
             onChanged: (v) => setState(() => _smoking = v),
+            normalRange: 'N/A (Categorical)',
           ),
           const SizedBox(height: 20),
           _buildSwitchInput(
@@ -227,6 +232,7 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
             icon: Icons.fitness_center,
             validatorMin: 10,
             validatorMax: 60,
+            normalRange: '18.5 - 24.9',
           ),
           const SizedBox(height: 20),
           _buildNumberInput(
@@ -235,6 +241,7 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
             icon: Icons.water_drop,
             validatorMin: 100,
             validatorMax: 500,
+            normalRange: '125 - 200',
           ),
           const SizedBox(height: 20),
           _buildNumberInput(
@@ -243,6 +250,7 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
             icon: Icons.monitor_heart,
             validatorMin: 80,
             validatorMax: 250,
+            normalRange: '90 - 120',
           ),
           const SizedBox(height: 20),
           _buildNumberInput(
@@ -251,6 +259,7 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
             icon: Icons.monitor_heart,
             validatorMin: 40,
             validatorMax: 150,
+            normalRange: '60 - 80',
           ),
           const SizedBox(height: 30),
           _buildPredictButton(),
@@ -264,6 +273,7 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
     required String? value,
     required List<String> items,
     required ValueChanged<String?> onChanged,
+    String normalRange = '',
   }) {
     return DropdownButtonFormField<String>(
       value: value,
@@ -271,6 +281,26 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
         labelText: label,
         labelStyle: const TextStyle(color: Colors.black87),
         prefixIcon: const Icon(Icons.arrow_drop_down, color: Color(0xFF6C63FF)),
+        suffixIcon: normalRange.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.info_outline, color: Colors.grey),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: const Text('Normal Range'),
+                      content: Text('Normal range for "$label": $normalRange'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              )
+            : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide.none,
@@ -286,7 +316,8 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
           borderSide: BorderSide(color: Colors.grey.shade300),
         ),
       ),
-      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+      items:
+          items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
       validator: (v) => v == null ? 'Please select $label' : null,
       onChanged: onChanged,
     );
@@ -298,6 +329,7 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
     required IconData icon,
     required double validatorMin,
     required double validatorMax,
+    required String normalRange,
   }) {
     return TextFormField(
       controller: controller,
@@ -306,6 +338,24 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
         labelText: label,
         labelStyle: const TextStyle(color: Colors.black87),
         prefixIcon: Icon(icon, color: const Color(0xFF6C63FF)),
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.info_outline, color: Colors.grey),
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text('Normal Range'),
+                content: Text('Normal range for "$label": $normalRange'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide.none,
@@ -320,7 +370,7 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide(color: Colors.grey.shade300),
         ),
-         errorBorder: OutlineInputBorder(
+        errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: const BorderSide(color: Colors.red),
         ),
@@ -338,7 +388,9 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
         }
         return null;
       },
-      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))],
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))
+      ],
     );
   }
 
@@ -351,7 +403,7 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
           MaterialPageRoute(builder: (context) => const PositiveResultPage()),
         );
       },
-       style: ElevatedButton.styleFrom(
+      style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 35),
         backgroundColor: Colors.orangeAccent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -361,16 +413,16 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
       child: const Text(
         'Continue for Advice',
         style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 1.1,
-          color: Colors.white
-        ),
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1.1,
+            color: Colors.white),
       ),
     );
   }
 
-  Widget _buildSwitchInput(String label, bool value, ValueChanged<bool> onChanged) {
+  Widget _buildSwitchInput(
+      String label, bool value, ValueChanged<bool> onChanged) {
     return SwitchListTile(
       title: Text(label, style: const TextStyle(color: Colors.black87)),
       value: value,
@@ -395,10 +447,14 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
           ? const SizedBox(
               width: 25,
               height: 25,
-              child: CircularProgressIndicator(strokeWidth: 3, color: Colors.white),
+              child: CircularProgressIndicator(
+                  strokeWidth: 3, color: Colors.white),
             )
           : const Text('Check Risk',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white)),
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white)),
     );
   }
 
@@ -407,27 +463,35 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 500),
       transitionBuilder: (Widget child, Animation<double> animation) {
-        return ScaleTransition(scale: animation, child: FadeTransition(opacity: animation, child: child));
+        return ScaleTransition(
+            scale: animation,
+            child: FadeTransition(opacity: animation, child: child));
       },
       // Use a ValueKey to ensure the animation triggers when content changes
-      child: result.isNotEmpty && !result.startsWith('Model Load Error') // Don't show result box for model errors
+      child: result.isNotEmpty &&
+              !result.startsWith(
+                  'Model Load Error') // Don't show result box for model errors
           ? Container(
-               key: ValueKey(result), // Key based on the result string
+              key: ValueKey(result), // Key based on the result string
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 // Use color based on the _isHypertensive flag
                 color: _getResultColor(_isHypertensive).withOpacity(0.1),
-                border: Border.all(color: _getResultColor(_isHypertensive), width: 2), // Border with color
+                border: Border.all(
+                    color: _getResultColor(_isHypertensive),
+                    width: 2), // Border with color
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Column(
                 children: [
-                   Icon(
+                  Icon(
                     // Choose icon based on the _isHypertensive flag
                     _isHypertensive
-                        ? Icons.warning_amber_rounded // Warning icon for positive
+                        ? Icons
+                            .warning_amber_rounded // Warning icon for positive
                         : Icons.check_circle, // Check icon for negative
-                    color: _getResultColor(_isHypertensive), // Icon color matches result color
+                    color: _getResultColor(
+                        _isHypertensive), // Icon color matches result color
                     size: 60,
                   ),
                   const SizedBox(height: 20),
@@ -436,37 +500,39 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: _getResultColor(_isHypertensive), // Text color matches result color
+                      color: _getResultColor(
+                          _isHypertensive), // Text color matches result color
                     ),
                     textAlign: TextAlign.center,
                   ),
-                   const SizedBox(height: 12),
-                   LinearProgressIndicator(
-                     value: probabilityValue, // Use the raw probability value
-                     backgroundColor: Colors.grey.shade300,
-                     valueColor: AlwaysStoppedAnimation<Color>(_getResultColor(_isHypertensive)),
-                     minHeight: 10,
-                     borderRadius: BorderRadius.circular(5),
-                   ),
-                   const SizedBox(height: 12),
-                   Text(
-                     // Display the probability text
-                     'Probability: ${(probabilityValue * 100).toStringAsFixed(2)}%',
-                     style: TextStyle(
-                       fontSize: 16,
-                       fontWeight: FontWeight.w500,
-                       color: Colors.grey[700],
-                     ),
-                     textAlign: TextAlign.center,
-                   ),
+                  const SizedBox(height: 12),
+                  LinearProgressIndicator(
+                    value: probabilityValue, // Use the raw probability value
+                    backgroundColor: Colors.grey.shade300,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        _getResultColor(_isHypertensive)),
+                    minHeight: 10,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    // Display the probability text
+                    'Probability: ${(probabilityValue * 100).toStringAsFixed(2)}%',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[700],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ],
               ),
             )
-          : const SizedBox.shrink(), // Show nothing when result is empty or a model error
+          : const SizedBox
+              .shrink(), // Show nothing when result is empty or a model error
     );
   }
 
-  // --- Modified _getResultColor to accept boolean ---
   // Returns the color based on the boolean result flag
   Color _getResultColor(bool isHypertensive) {
     if (isHypertensive) {
@@ -475,8 +541,6 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
       return Colors.green; // Green for negative/success
     }
   }
-  // --- End Modified _getResultColor ---
-
 
   Future<void> _handlePrediction() async {
     // Clear previous result and state, start processing indicator
@@ -493,68 +557,73 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
     // Validate form
     if (!_formKey.currentState!.validate()) {
       setState(() {
-         _isProcessing = false; // Stop processing if validation fails
+        _isProcessing = false; // Stop processing if validation fails
       });
       return; // Stop if validation fails
     }
 
     // Check if model is loaded before running inference
     if (!_isModelLoaded || _interpreter == null) {
-         setState(() {
-           result = 'Error: Model not loaded. Cannot predict.'; // Update result for prediction failure
-           _isProcessing = false;
-         });
-         return;
+      setState(() {
+        result =
+            'Error: Model not loaded. Cannot predict.'; // Update result for prediction failure
+        _isProcessing = false;
+      });
+      return;
     }
 
     try {
-        final rawInputs = [
-            double.parse(ageController.text),
-            _gender == 'Male' ? 1.0 : 0.0, // Gender: Male=1, Female=0
-            _getSmokingValue(_smoking), // Use a helper for smoking
-            double.parse(bmiController.text),
-            double.parse(cholController.text),
-            double.parse(sysBPController.text),
-            double.parse(diaBPController.text),
-            hasDiabetes ? 1.0 : 0.0
-        ];
+      final rawInputs = [
+        double.parse(ageController.text),
+        _gender == 'Male' ? 1.0 : 0.0, // Gender: Male=1, Female=0
+        _getSmokingValue(_smoking), // Use a helper for smoking
+        double.parse(bmiController.text),
+        double.parse(cholController.text),
+        double.parse(sysBPController.text),
+        double.parse(diaBPController.text),
+        hasDiabetes ? 1.0 : 0.0
+      ];
 
-        // Scaling inputs - **CRITICAL: Ensure _scaleInput matches your model's training scaler!**
-        final scaledInputs = _scaleInput(rawInputs);
+      // Scaling inputs - **CRITICAL: Ensure _scaleInput matches your model's training scaler!**
+      final scaledInputs = _scaleInput(rawInputs);
 
-        // TFLite input buffer shape [1, number_of_features]
-        final input = [scaledInputs];
+      // TFLite input buffer shape [1, number_of_features]
+      final input = [scaledInputs];
 
-        // TFLite output buffer shape [1, number_of_outputs] (usually [1, 1] for binary classification)
-        final output = List.filled(1, 0.0).reshape([1, 1]);
+      // TFLite output buffer shape [1, number_of_outputs] (usually [1, 1] for binary classification)
+      final output = List.filled(1, 0.0).reshape([1, 1]);
 
-        // Run inference
-        _interpreter.run(input, output);
+      // Run inference
+      _interpreter.run(input, output);
 
-        final prediction = output[0][0]; // Get the single probability value (e.g., 0.75)
+      final prediction =
+          output[0][0]; // Get the single probability value (e.g., 0.75)
 
-        // Determine boolean result and probability percentage for display
-        final isHypertensiveResult = prediction >= 0.5; // Use your model's probability threshold (e.g., 0.5)
-        final probabilityPercentage = (prediction * 100).toStringAsFixed(2);
-        final resultText = isHypertensiveResult
-            ? 'Hypertensive'
-            : 'Not Hypertensive';
+      // Determine boolean result and probability percentage for display
+      final isHypertensiveResult = prediction >=
+          0.5; // Use your model's probability threshold (e.g., 0.5)
+      final probabilityPercentage = (prediction * 100).toStringAsFixed(2);
+      final resultText =
+          isHypertensiveResult ? 'Hypertensive' : 'Not Hypertensive';
 
-        print("Hypertension Prediction Probability: $prediction ($probabilityPercentage%)");
+      print(
+          "Hypertension Prediction Probability: $prediction ($probabilityPercentage%)");
 
-        // Update state with final result, probability, and the boolean flag
-        setState(() {
-          probabilityValue = prediction; // Store raw probability
-          result = '$resultText ($probabilityPercentage%)'; // Set the result string including percentage
-          _isHypertensive = isHypertensiveResult; // <-- Set the boolean flag based on prediction
-        });
-
+      // Update state with final result, probability, and the boolean flag
+      setState(() {
+        probabilityValue = prediction; // Store raw probability
+        result =
+            '$resultText ($probabilityPercentage%)'; // Set the result string including percentage
+        _isHypertensive =
+            isHypertensiveResult; // Set the boolean flag based on prediction
+      });
     } catch (e) {
-       setState(() {
-         result = 'Prediction failed: ${e.toString()}'; // Show error in result area
-         _isHypertensive = false; // Ensure flag is false on error
-       });
-       print("Hypertension Prediction error: $e");
+      setState(() {
+        result =
+            'Prediction failed: ${e.toString()}'; // Show error in result area
+        _isHypertensive = false; // Ensure flag is false on error
+      });
+      print("Hypertension Prediction error: $e");
     } finally {
       setState(() => _isProcessing = false); // Always stop processing
     }
@@ -562,64 +631,90 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
 
   // Helper function to map smoking status string to numerical value
   double _getSmokingValue(String? smokingStatus) {
-      // **CRITICAL: Ensure this mapping matches the encoding used when training your model!**
-      switch (smokingStatus) {
-          case 'Never': return 0.0;
-          case 'Formerly': return 0.5; // Assuming Formerly is 0.5, adjust if your model used 0 or 1
-          case 'Smokes': return 1.0;
-          default: return 0.0; // Handle null or 'No Info' as Never
-      }
+    // **CRITICAL: Ensure this mapping matches the encoding used when training your model!**
+    switch (smokingStatus) {
+      case 'Never':
+        return 0.0;
+      case 'Formerly':
+        return 0.5; // Assuming Formerly is 0.5, adjust if your model used 0 or 1
+      case 'Smokes':
+        return 1.0;
+      default:
+        return 0.0; // Handle null or 'No Info' as Never
+    }
   }
 
   // Example scaling logic - **Verify this matches your model's training scaler!**
   List<double> _scaleInput(List<double> rawInputs) {
-      // These min/max values *must* come from the data used to train your hypertension model's scaler.
-      // If your model used StandardScaler or MinMaxScaler, these need to match those fit on the training data.
-      // The order and values below are placeholders based on typical ranges but might not be correct for your model.
-      // Match the order of rawInputs: age, gender, smoking, bmi, chol, sysBP, diaBP, diabetes
-      final minValues = [0.0, 0.0, 0.0, 10.0, 100.0, 80.0, 40.0, 0.0]; // Example min for each feature
-      final maxValues = [120.0, 1.0, 1.0, 60.0, 500.0, 250.0, 150.0, 1.0]; // Example max for each feature
+    // These min/max values *must* come from the data used to train your hypertension model's scaler.
+    // If your model used StandardScaler or MinMaxScaler, these need to match those fit on the training data.
+    // The order and values below are placeholders based on typical ranges but might not be correct for your model.
+    // Match the order of rawInputs: age, gender, smoking, bmi, chol, sysBP, diaBP, diabetes
+    final minValues = [
+      0.0,
+      0.0,
+      0.0,
+      10.0,
+      100.0,
+      80.0,
+      40.0,
+      0.0
+    ]; // Example min for each feature
+    final maxValues = [
+      120.0,
+      1.0,
+      1.0,
+      60.0,
+      500.0,
+      250.0,
+      150.0,
+      1.0
+    ]; // Example max for each feature
 
-      if (rawInputs.length != minValues.length || rawInputs.length != maxValues.length) {
-           print("Scaling Error: Input length (${rawInputs.length}) doesn't match min/max value lists length (${minValues.length}).");
-           // In a real app, you might want to throw an exception or show a user-friendly error
-           // For now, we'll just return the raw inputs (prediction will likely be wrong)
-           return rawInputs;
-      }
+    if (rawInputs.length != minValues.length ||
+        rawInputs.length != maxValues.length) {
+      print(
+          "Scaling Error: Input length (${rawInputs.length}) doesn't match min/max value lists length (${minValues.length}).");
+      // In a real app, you might want to throw an exception or show a user-friendly error
+      // For now, we'll just return the raw inputs (prediction will likely be wrong)
+      return rawInputs;
+    }
 
-      List<double> scaled = [];
-      for (int i = 0; i < rawInputs.length; i++) {
-          final min = minValues[i];
-          final max = maxValues[i];
-           // Prevent division by zero if max == min
-          if (max == min) {
-               // Handle this case - might return 0.0, raw value, or throw error depending on scaler type
-               print("Scaling Warning: Max equals Min for feature at index $i. Cannot scale. Returning raw value or 0.0.");
-               scaled.add(rawInputs[i]); // Or scaled.add(0.0)
-          } else {
-              scaled.add((rawInputs[i] - min) / (max - min));
-          }
+    List<double> scaled = [];
+    for (int i = 0; i < rawInputs.length; i++) {
+      final min = minValues[i];
+      final max = maxValues[i];
+      // Prevent division by zero if max == min
+      if (max == min) {
+        // Handle this case - might return 0.0, raw value, or throw error depending on scaler type
+        print(
+            "Scaling Warning: Max equals Min for feature at index $i. Cannot scale. Returning raw value or 0.0.");
+        scaled.add(rawInputs[i]); // Or scaled.add(0.0)
+      } else {
+        scaled.add((rawInputs[i] - min) / (max - min));
       }
-      return scaled;
+    }
+    return scaled;
   }
 
   // Modified _buildModelError to be more informative and only show load error
   Widget _buildModelError() {
-     // This widget is specifically for the initial model *loading* error
-     return Center(
-       child: Padding(
-         padding: const EdgeInsets.symmetric(vertical: 20),
-         child: Text(
-           result.isNotEmpty ? result : 'Loading Hypertension model...', // Show the error message from state, or loading text
-           style: const TextStyle(
-             fontSize: 18,
-             color: Colors.redAccent,
-             fontWeight: FontWeight.bold,
-           ),
-           textAlign: TextAlign.center,
-         ),
-       ),
-     );
-   }
-
+    // This widget is specifically for the initial model *loading* error
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Text(
+          result.isNotEmpty
+              ? result
+              : 'Loading Hypertension model...', // Show the error message from state, or loading text
+          style: const TextStyle(
+            fontSize: 18,
+            color: Colors.redAccent,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
 } // End of _HypertensionTestPageState class

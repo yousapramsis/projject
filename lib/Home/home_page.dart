@@ -1,18 +1,22 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:project_grad/Diseases/Heart/heart_symptoms_screen.dart';
-import 'package:project_grad/Home/widgets/diseases_card.dart';
-import '../Diseases/Diabetes/diabetes_symptoms_screen.dart';
+import 'package:project_grad/settings/settings_screen.dart';
+import '../l10n/app_localizations.dart';
 import '../AboutUs/AboutUsPage.dart';
-import '../Diseases/Hypertention/hypertension_symptoms_screen.dart';
+import 'widgets/diseases_card.dart';
 import '../Diseases/Diabetes/diabetes_symptoms_screen.dart';
-import '../Diseases/Heart/heart_diseases_test_page.dart';
-import '../Diseases/Hypertention/hypertension_test_page.dart';
+import '../Diseases/Hypertention/hypertension_symptoms_screen.dart';
+import '../Diseases/Heart/heart_symptoms_screen.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-  final String title;
+  final Function(Locale) onLocaleChange;
+  final Locale currentLocale;
+
+  const MyHomePage({
+    Key? key,
+    required this.onLocaleChange,
+    required this.currentLocale,
+  }) : super(key: key);
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -20,24 +24,27 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _currentPage = 0;
+  late Locale _locale; // Add local locale state
   final PageController _pageController = PageController();
   Timer? _timer;
-  final List<String> _healthAdvices = [
-    "Stay hydrated by drinking plenty of water.",
-    "Eat a balanced diet rich in fruits and vegetables.",
-    "Exercise regularly to maintain a healthy weight.",
-    "Get enough sleep each night.",
-    "Manage stress through relaxation techniques.",
-    "Limit your intake of processed foods and sugary drinks.",
-    "Avoid smoking and excessive alcohol consumption.",
-    "Get regular checkups with your doctor.",
-    "Maintain a healthy social life and strong relationships.",
-    "Practice good hygiene to prevent infections.",
-    "It's best to avoid animal fats for a healthier lifestyle",
-    "Include more plant-based foods in your diet for better health.",
+
+  final List<String> _adviceKeys = [
+    'advice_hydration',
+    'advice_balanced_diet',
+    'advice_exercise',
+    'sleep_advice',
+    'advice_stress',
+    'advice_processed_foods',
+    'advice_smoking',
+    'advice_checkups',
+    'advice_social_life',
+    'advice_hygiene',
+    'advice_animal_fats',
+    'advice_plant_based',
   ];
+
   final List<String> _slideImages = [
-    'assets/assets/slide1.png', // Replace with your actual image paths
+    'assets/assets/slide1.png',
     'assets/assets/slide2.png',
     'assets/assets/slide3.png',
     'assets/assets/slide4.png',
@@ -54,7 +61,34 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    _locale = widget.currentLocale; // Initialize local locale state
     _startTimer();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      int nextPage = (_currentPage + 1) % _slideImages.length;
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.ease,
+        );
+      }
+      _currentPage = nextPage;
+    });
+  }
+
+  void _updateLocale(Locale newLocale) {
+    setState(() {
+      _locale = newLocale; // Update local locale state
+    });
+    widget.onLocaleChange(newLocale); // Notify parent
   }
 
   @override
@@ -64,29 +98,14 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      if (_currentPage < _slideImages.length - 1) {
-        _currentPage++;
-      } else {
-        _currentPage = 0; // Loop back to the first slide
-      }
-      // Animate to the next page.  Use animateToPage for smooth scrolling.
-      if (_pageController.hasClients) {
-        // Check if the controller is attached
-        _pageController.animateToPage(
-          _currentPage,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.ease, // Smooth animation
-        );
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    if (loc == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
-      extendBodyBehindAppBar: false,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         flexibleSpace: Container(
@@ -98,15 +117,30 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
         ),
-        title: Text(widget.title),
+        title: Text(loc.app_title),
         actions: [
-          
           IconButton(
+            tooltip: 'About Us',
             icon: const Icon(Icons.info_outline),
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const AboutUsPage()),
             ),
+          ),
+          IconButton(
+            tooltip: loc.settings,
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SettingsScreen(
+                    currentLocale: _locale, // Use local locale state
+                    onLocaleChange: _updateLocale, // Pass update function
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -127,24 +161,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   controller: _pageController,
                   itemCount: _slideImages.length,
                   onPageChanged: (int page) {
-                    setState(() {
-                      _currentPage = page; // Update current page index
-                    });
+                    if (mounted) {
+                      setState(() => _currentPage = page);
+                    }
                   },
-                  itemBuilder: (context, index) {
-                    return buildSlideItem(index); // Use the helper method
-                  },
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 30),
-                    ],
-                  ),
+                  itemBuilder: (context, index) => buildSlideItem(index, loc),
                 ),
               ),
               Container(
@@ -162,10 +183,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'Health Assessments',
-                      style: TextStyle(
+                    Text(
+                      loc.health_assessments,
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF4A90E2),
@@ -177,32 +199,29 @@ class _MyHomePageState extends State<MyHomePage> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Row(
                         children: [
-                          const SizedBox(width: 20),
                           DiseaseCard(
-                            title: 'Diabetes',
+                            title: loc.diabetes,
                             icon: Icons.bloodtype,
-                            color1: const Color.fromARGB(255, 228, 235, 141),
-                            color2: const Color.fromARGB(255, 176, 194, 76),
-                            route:
-                                DiabetesSymptomsScreen(), // Route to symptoms screen first
+                            color1: const Color.fromARGB(255, 245, 199, 100),
+                            color2: const Color.fromARGB(255, 238, 160, 40),
+                            route: DiabetesSymptomsScreen(),
                           ),
-                          const DiseaseCard(
-                            title: 'Hypertension',
+                          const SizedBox(width: 15),
+                          DiseaseCard(
+                            title: loc.hypertension,
                             icon: Icons.monitor_heart,
-                            color1: Color.fromARGB(255, 71, 85, 209),
-                            color2: Color.fromARGB(255, 66, 86, 231),
+                            color1: const Color.fromARGB(255, 100, 120, 240),
+                            color2: const Color.fromARGB(255, 66, 86, 231),
                             route: HypertensionSymptomsScreen(),
                           ),
-                          const DiseaseCard(
-                            title: 'Heart Health',
+                          const SizedBox(width: 15),
+                          DiseaseCard(
+                            title: loc.heart_health,
                             icon: Icons.favorite,
-                            color1: Color(0xFFF44336),
-                            // Red Color for Heart Health
-                            color2: Color(0xFFE57373),
-                            // Lighter Red
+                            color1: const Color(0xFFF44336),
+                            color2: const Color(0xFFE57373),
                             route: HeartDiseaseSymptomsScreen(),
                           ),
-                          const SizedBox(width: 20),
                         ],
                       ),
                     ),
@@ -216,31 +235,71 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
- 
-
-  // Helper method to build each slide item
-  Widget buildSlideItem(int index) {
+  Widget buildSlideItem(int index, AppLocalizations loc) {
+    if (index < 0 ||
+        index >= _slideImages.length ||
+        index >= _adviceKeys.length) {
+      return const SizedBox.shrink();
+    }
     return Padding(
-      padding: const EdgeInsets.all(20.0),
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset(_slideImages[index],
-              height: 200), // Adjust height as needed
-          const SizedBox(height: 30),
+          Expanded(
+            child: Image.asset(
+              _slideImages[index],
+              fit: BoxFit.contain,
+              width: 350,
+              height: 350,
+            ),
+          ),
+          //const SizedBox(height: 10),
           Text(
-            _healthAdvices[index],
+            _getAdviceText(loc, _adviceKeys[index]),
             style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2D2D3A),
+              fontSize: 22,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF33334A),
+              height: 1.4,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 15),
-          // Optional: Add "next/previous" indicators or dots here.
+          const SizedBox(height: 10),
         ],
       ),
     );
+  }
+
+  String _getAdviceText(AppLocalizations loc, String key) {
+    switch (key) {
+      case 'advice_hydration':
+        return loc.advice_hydration;
+      case 'advice_balanced_diet':
+        return loc.advice_balanced_diet;
+      case 'advice_exercise':
+        return loc.advice_exercise;
+      case 'sleep_advice':
+        return loc.sleep_advice;
+      case 'advice_stress':
+        return loc.advice_stress;
+      case 'advice_processed_foods':
+        return loc.advice_processed_foods;
+      case 'advice_smoking':
+        return loc.advice_smoking;
+      case 'advice_checkups':
+        return loc.advice_checkups;
+      case 'advice_social_life':
+        return loc.advice_social_life;
+      case 'advice_hygiene':
+        return loc.advice_hygiene;
+      case 'advice_animal_fats':
+        return loc.advice_animal_fats;
+      case 'advice_plant_based':
+        return loc.advice_plant_based;
+      default:
+        print("Warning: Missing advice key localization: $key");
+        return key;
+    }
   }
 }
