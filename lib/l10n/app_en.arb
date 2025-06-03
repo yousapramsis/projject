@@ -196,6 +196,7 @@
   "hypertension_symptoms_warning_desc": "Hypertension is a serious condition...",
   "hypertension_symptoms_selected": "You've selected {count} symptoms. It's recommended to take a hypertension test.",
   "hypertension_symptoms_check_anyway": "Check Anyway",
-  "hypertension_symptoms_continue": "Continue Test"
+  "hypertension_symptoms_continue": "Continue Test",
+  "enter_value" : "Enter Value"
 
 }

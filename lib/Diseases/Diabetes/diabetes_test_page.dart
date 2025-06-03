@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:project_grad/l10n/app_localizations.dart' show AppLocalizations;
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'positive_result_page.dart';
 
@@ -37,6 +38,9 @@ class _DiabetesTestPageState extends State<DiabetesTestPage>
   bool _isProcessing = false;
   late AnimationController _animationController;
   late Animation<double> _resultAnimation;
+
+  // Language toggle for demo purposes
+  String _currentLang = 'en'; // Default to English
 
   // Feature-scaling metadata (unchanged)
   final _featureNames = [
@@ -107,20 +111,30 @@ class _DiabetesTestPageState extends State<DiabetesTestPage>
       setState(() => _isModelLoaded = true);
     } catch (e) {
       setState(() {
-        result = 'خطأ في النموذج: $e'; // "Model Error: {error}"
+        result = '${AppLocalizations.of(context)!.model_error}'
+            .replaceAll('{error}', e.toString());
         _isModelLoaded = false;
       });
     }
   }
 
+  // Toggle language for demo
+  void _toggleLanguage() {
+    setState(() {
+      _currentLang = _currentLang == 'en' ? 'ar' : 'en';
+      // In a real app, update the app's locale here (e.g., via Provider or setState)
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl, // Set RTL for Arabic
+      textDirection: AppLocalizations.of(context)!.isRtl == "true"
+          ? TextDirection.rtl
+          : TextDirection.ltr,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(
-              'تقييم خطر الإصابة بمرض السكري'), // "Diabetes Risk Assessment"
+          title: Text(AppLocalizations.of(context)!.diabetes_risk_assess),
           centerTitle: true,
           flexibleSpace: Container(
               decoration: const BoxDecoration(
@@ -128,6 +142,12 @@ class _DiabetesTestPageState extends State<DiabetesTestPage>
                       colors: [Color(0xFF6C63FF), Color(0xFF4A90E2)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight))),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.language),
+              onPressed: _toggleLanguage, // Toggle language for demo
+            ),
+          ],
         ),
         body: Container(
           decoration: const BoxDecoration(
@@ -149,8 +169,8 @@ class _DiabetesTestPageState extends State<DiabetesTestPage>
                             const SizedBox(height: 30),
                             if (!_isModelLoaded) _buildError(),
                             _buildResult(),
-                            if (result.contains('إيجابي')) ...[
-                              // "Positive"
+                            if (result.contains(
+                                AppLocalizations.of(context)!.positive)) ...[
                               const SizedBox(height: 25),
                               _buildContinueButton(),
                             ],
@@ -164,18 +184,20 @@ class _DiabetesTestPageState extends State<DiabetesTestPage>
   Widget _buildHeader() => Column(children: [
         const Icon(Icons.health_and_safety, size: 70, color: Color(0xFF6C63FF)),
         const SizedBox(height: 20),
-        Text('تقييم خطر الإصابة بمرض السكري', // "Diabetes Risk Assessment"
-            style: Theme.of(context)
-                .textTheme
-                .headlineSmall
-                ?.copyWith(fontSize: 28, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center),
+        Text(
+          AppLocalizations.of(context)!.diabetes_risk_assess,
+          style: Theme.of(context)
+              .textTheme
+              .headlineSmall
+              ?.copyWith(fontSize: 28, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: 12),
         Text(
-            'قدم معلومات صحية دقيقة للحصول على نتائج موثوقة', // "Provide accurate health information for reliable results"
-            style:
-                TextStyle(fontSize: 16, color: Colors.grey[600], height: 1.5),
-            textAlign: TextAlign.center),
+          AppLocalizations.of(context)!.provide_health_info,
+          style: TextStyle(fontSize: 16, color: Colors.grey[600], height: 1.5),
+          textAlign: TextAlign.center,
+        ),
       ]);
 
   Widget _buildInputsCard() => Container(
@@ -192,101 +214,85 @@ class _DiabetesTestPageState extends State<DiabetesTestPage>
         ),
         child: Column(children: [
           _buildDropdown(
-              'الجنس', // "Gender"
-              ['ذكر', 'أنثى'], // "Male", "Female"
+              AppLocalizations.of(context)!.gender,
+              [
+                AppLocalizations.of(context)!.gender_male,
+                AppLocalizations.of(context)!.gender_female
+              ],
               _gender,
               (v) => setState(() => _gender = v)),
           const SizedBox(height: 20),
           _buildDropdown(
-              'تاريخ التدخين', // "Smoking History"
+              AppLocalizations.of(context)!.smoking_history,
               [
-                'لم يدخن',
-                'مدخن حالياً',
-                'مدخن سابق',
-                'غير محدد'
-              ], // "Never", "Current", "Former", "No Info"
+                AppLocalizations.of(context)!.smoking_never,
+                AppLocalizations.of(context)!.smoking_current,
+                AppLocalizations.of(context)!.smoking_former,
+                AppLocalizations.of(context)!.smoking_no_info
+              ],
               _smokingHistory,
               (v) => setState(() => _smokingHistory = v)),
           const SizedBox(height: 20),
-          _buildNumberInput(
-              ageController,
-              'العمر', // "Age"
-              'cake',
-              0,
-              100,
-              'النطاق الطبيعي لعمر البالغين: 18–65 سنة'), // "Normal adult age range: 18–65 years"
+          _buildNumberInput(ageController, AppLocalizations.of(context)!.age,
+              'cake', 0, 100, AppLocalizations.of(context)!.age_range_info),
           const SizedBox(height: 15),
           _buildNumberInput(
               bmiController,
-              'مؤشر كتلة الجسم', // "BMI"
+              AppLocalizations.of(context)!.bmi,
               'monitor_weight',
               10,
               60,
-              'مؤشر كتلة الجسم الطبيعي: 18.5–24.9'), // "Normal BMI: 18.5–24.9"
+              AppLocalizations.of(context)!.bmi_range_info),
           const SizedBox(height: 15),
           _buildNumberInput(
               hba1cController,
-              'الهيموجلوبين السكري (%)', // "HbA1c (%)"
+              AppLocalizations.of(context)!.hba1c,
               'bloodtype',
               3,
               10,
-              'الهيموجلوبين السكري الطبيعي: أقل من 5.7%'), // "Normal HbA1c: Below 5.7%"
+              AppLocalizations.of(context)!.hba1c_range_info),
           const SizedBox(height: 15),
           _buildNumberInput(
               glucoseController,
-              'الجلوكوز (ملغم/ديسيلتر)', // "Glucose (mg/dL)"
+              AppLocalizations.of(context)!.glucose,
               'favorite',
               50,
               400,
-              'الجلوكوز الصائم الطبيعي: 70–99 ملغم/ديسيلتر'), // "Normal fasting glucose: 70–99 mg/dL"
+              AppLocalizations.of(context)!.glucose_range_info),
           const SizedBox(height: 15),
           _buildNumberInput(
               cholesterolController,
-              'الكوليسترول الكلي (ملغم/ديسيلتر)', // "Cholesterol (mg/dL)"
+              AppLocalizations.of(context)!.cholesterol,
               'water_drop',
               0,
               500,
-              'المستحب: أقل من 200 ملغم/ديسيلتر'), // "Desirable: Below 200 mg/dL"
+              AppLocalizations.of(context)!.total_cholesterol_range_info),
           const SizedBox(height: 15),
-          _buildNumberInput(
-              ldlController,
-              'الكوليسترول الضار (ملغم/ديسيلتر)', // "LDL (mg/dL)"
-              'layers',
-              0,
-              300,
-              'الأمثل: أقل من 100 ملغم/ديسيلتر'), // "Optimal: Below 100 mg/dL"
+          _buildNumberInput(ldlController, AppLocalizations.of(context)!.ldl,
+              'layers', 0, 300, AppLocalizations.of(context)!.ldl_range_info),
           const SizedBox(height: 15),
           _buildNumberInput(
               triglyceridesController,
-              'الدهون الثلاثية (ملغم/ديسيلتر)', // "Triglycerides (mg/dL)"
+              AppLocalizations.of(context)!.triglycerides,
               'bubble_chart',
               0,
               500,
-              'الطبيعي: أقل من 150 ملغم/ديسيلتر'), // "Normal: Below 150 mg/dL"
+              AppLocalizations.of(context)!.triglycerides_range_info),
           const SizedBox(height: 15),
-          _buildNumberInput(
-              hdlController,
-              'الكوليسترول الجيد (ملغم/ديسيلتر)', // "HDL (mg/dL)"
-              'circle',
-              0,
-              200,
-              'المستحب: 40 ملغم/ديسيلتر أو أعلى'), // "Desirable: 40 mg/dL or higher"
+          _buildNumberInput(hdlController, AppLocalizations.of(context)!.hdl,
+              'circle', 0, 200, AppLocalizations.of(context)!.hdl_range_info),
           const SizedBox(height: 20),
-          _buildSwitch(
-              'الضغط', // "Hypertension"
-              hasHypertension,
-              (v) => setState(() => hasHypertension = v!)),
-          _buildSwitch(
-              'أمراض القلب', // "Heart Disease"
-              hasHeartDisease,
-              (v) => setState(() => hasHeartDisease = v!)),
+          _buildSwitch(AppLocalizations.of(context)!.hypertension,
+              hasHypertension, (v) => setState(() => hasHypertension = v!)),
+          _buildSwitch(AppLocalizations.of(context)!.heart_disease,
+              hasHeartDisease, (v) => setState(() => hasHeartDisease = v!)),
           const SizedBox(height: 30),
           ElevatedButton(
             onPressed: _isModelLoaded && !_isProcessing ? _predict : null,
             child: _isProcessing
                 ? const SizedBox(
                     width: 25, height: 25, child: CircularProgressIndicator())
-                : const Text('افحص الخطر'), // "Check Risk"
+                : Text(AppLocalizations.of(context)!.check_risk),
           ),
         ]),
       );
@@ -296,10 +302,14 @@ class _DiabetesTestPageState extends State<DiabetesTestPage>
     return DropdownButtonFormField<String>(
       value: val,
       decoration: InputDecoration(
-          labelText: label, filled: true, fillColor: Color(0xFFF8F9FF)),
+          labelText: label, filled: true, fillColor: const Color(0xFFF8F9FF)),
       items:
           opts.map((o) => DropdownMenuItem(value: o, child: Text(o))).toList(),
-      validator: (v) => v == null ? 'اختر $label' : null, // "Select $label"
+      validator: (v) => v == null
+          ? AppLocalizations.of(context)!
+              .select_option
+              .replaceAll('{label}', label)
+          : null,
       onChanged: onChanged,
     );
   }
@@ -337,13 +347,14 @@ class _DiabetesTestPageState extends State<DiabetesTestPage>
             showDialog(
               context: context,
               builder: (context) => AlertDialog(
-                title: Text(
-                    'النطاق الطبيعي لـ $label'), // "Normal Range for $label"
+                title: Text(AppLocalizations.of(context)!
+                    .normal_range_for
+                    .replaceAll('{label}', label)),
                 content: Text(infoText),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('حسناً'), // "OK"
+                    child: Text(AppLocalizations.of(context)!.ok),
                   ),
                 ],
               ),
@@ -354,7 +365,7 @@ class _DiabetesTestPageState extends State<DiabetesTestPage>
     );
   }
 
-  // helper map for icons:
+  // Helper map for icons
   static const Map<String, int> IconsMap = {
     'cake': 0xe7fb,
     'monitor_weight': 0xeb44,
@@ -370,7 +381,7 @@ class _DiabetesTestPageState extends State<DiabetesTestPage>
     return SwitchListTile(
         title: Text(label),
         value: val,
-        activeColor: Color(0xFF6C63FF),
+        activeColor: const Color(0xFF6C63FF),
         onChanged: onChanged);
   }
 
@@ -382,7 +393,7 @@ class _DiabetesTestPageState extends State<DiabetesTestPage>
   Widget _buildResult() => AnimatedSwitcher(
         duration: const Duration(milliseconds: 500),
         child: result.isEmpty
-            ? SizedBox.shrink()
+            ? const SizedBox.shrink()
             : Container(
                 padding: const EdgeInsets.all(25),
                 decoration: BoxDecoration(
@@ -392,9 +403,9 @@ class _DiabetesTestPageState extends State<DiabetesTestPage>
                 ),
                 child: Column(children: [
                   Icon(
-                      result.contains('إيجابي')
+                      result.contains(AppLocalizations.of(context)!.positive)
                           ? Icons.warning
-                          : Icons.check, // "Positive"
+                          : Icons.check,
                       color: _getColor(),
                       size: 60),
                   const SizedBox(height: 20),
@@ -403,8 +414,10 @@ class _DiabetesTestPageState extends State<DiabetesTestPage>
                   const SizedBox(height: 12),
                   LinearProgressIndicator(value: probabilityValue),
                   const SizedBox(height: 12),
-                  Text(
-                      'الاحتمالية: ${(probabilityValue * 100).toStringAsFixed(2)}%'), // "Probability: {value}%"
+                  Text('${AppLocalizations.of(context)!.probability}'
+                          .replaceAll('{value}',
+                              (probabilityValue * 100).toStringAsFixed(2)) +
+                      '%'),
                 ]),
               ),
       );
@@ -412,21 +425,27 @@ class _DiabetesTestPageState extends State<DiabetesTestPage>
   Widget _buildContinueButton() => ElevatedButton(
         onPressed: () => Navigator.push(context,
             MaterialPageRoute(builder: (_) => const PositiveResultPage())),
-        child: const Text('متابعة للحصول على نصائح'), // "Continue for Advice"
+        child: Text(AppLocalizations.of(context)!.continue_advice),
       );
 
   Color _getColor() {
-    if (result.contains('إيجابي')) return Colors.red; // "Positive"
-    if (result.contains('سلبي')) return Colors.green; // "Negative"
+    if (result.contains(AppLocalizations.of(context)!.positive))
+      return Colors.red;
+    if (result.contains(AppLocalizations.of(context)!.negative))
+      return Colors.green;
     return Colors.grey;
   }
 
   String? _validateRange(String? v, double min, double max) {
-    if (v == null || v.isEmpty) return 'أدخل قيمة'; // "Enter a value"
+    if (v == null || v.isEmpty)
+      return AppLocalizations.of(context)!.enter_value;
     final n = double.tryParse(v);
-    if (n == null) return 'تنسيق رقم غير صالح'; // "Invalid number format"
+    if (n == null) return AppLocalizations.of(context)!.invalid_number;
     if (n < min || n > max)
-      return 'يجب أن تكون القيمة بين $min و $max'; // "Must be $min–$max"
+      return AppLocalizations.of(context)!
+          .must_be_between
+          .replaceAll('{min}', min.toString())
+          .replaceAll('{max}', max.toString());
     return null;
   }
 
@@ -452,7 +471,7 @@ class _DiabetesTestPageState extends State<DiabetesTestPage>
     if (chol > 200 || ldl > 100 || tri > 150 || hdl < 40) {
       setState(() {
         probabilityValue = 1.0;
-        result = 'إيجابي (100.00%)'; // "Positive (100.00%)"
+        result = '${AppLocalizations.of(context)!.positive} (100.00%)';
         _isProcessing = false;
       });
       _animationController.forward();
@@ -466,8 +485,10 @@ class _DiabetesTestPageState extends State<DiabetesTestPage>
       hasHeartDisease ? 1.0 : 0.0,
       double.parse(hba1cController.text),
       double.parse(glucoseController.text),
-      _gender == 'ذكر' ? 1.0 : 0.0, // "Male"
-      _smokingHistory == 'مدخن حالياً' ? 1.0 : 0.0, // "Current"
+      _gender == AppLocalizations.of(context)!.gender_male ? 1.0 : 0.0,
+      _smokingHistory == AppLocalizations.of(context)!.smoking_current
+          ? 1.0
+          : 0.0,
     ];
     final input = [_standardizeInputs(rawInputs)];
     final output = [List<double>.filled(1, 0.0)];
@@ -477,8 +498,8 @@ class _DiabetesTestPageState extends State<DiabetesTestPage>
     setState(() {
       probabilityValue = p;
       result = p >= 0.4
-          ? 'إيجابي ($perc%)'
-          : 'سلبي ($perc%)'; // "Positive ($perc%)" or "Negative ($perc%)"
+          ? '${AppLocalizations.of(context)!.positive} ($perc%)'
+          : '${AppLocalizations.of(context)!.negative} ($perc%)';
       _isProcessing = false;
     });
     _animationController.forward();

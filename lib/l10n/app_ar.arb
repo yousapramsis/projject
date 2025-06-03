@@ -191,7 +191,8 @@
   "hypertension_symptoms_warning_desc": "ارتفاع ضغط الدم حالة خطيرة تتطلب...",
   "hypertension_symptoms_selected": "لقد حددت {count} أعراض. يُنصح بإجراء فحص لارتفاع ضغط الدم.",
   "hypertension_symptoms_check_anyway": "افحص على أي حال",
-  "hypertension_symptoms_continue": "متابعة الاختبار"
+  "hypertension_symptoms_continue": "متابعة الاختبار",
+  "enter_value" : "ادخل قيمه"
 
 
 }
