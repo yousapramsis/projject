@@ -1,5 +1,45 @@
-import 'package:flutter/material.dart';
-import 'hypertension_test_page.dart';
+import 'package:flutter/cupertino.dart' show Key;
+import 'package:flutter/material.dart'
+    show
+        StatefulWidget,
+        State,
+        BuildContext,
+        Widget,
+        Directionality,
+        Scaffold,
+        BoxDecoration,
+        Icon,
+        EdgeInsets,
+        SizedBox,
+        TextStyle,
+        Border,
+        Alignment,
+        LinearGradient,
+        Container,
+        Text,
+        Icons,
+        Navigator,
+        IconButton,
+        AppBar,
+        Column,
+        Padding,
+        SingleChildScrollView,
+        SafeArea,
+        BorderRadius,
+        RoundedRectangleBorder,
+        Card,
+        Colors,
+        ListTileControlAffinity,
+        CheckboxListTile,
+        BorderSide,
+        CrossAxisAlignment,
+        ElevatedButton,
+        MaterialPageRoute;
+import 'package:project_grad/l10n/app_localizations.dart' show AppLocalizations;
+import 'package:flutter/services.dart';
+import 'package:tflite_flutter/tflite_flutter.dart';
+
+import 'hypertension_test_page.dart' show HypertensionTestPage;
 
 class HypertensionSymptomsScreen extends StatefulWidget {
   const HypertensionSymptomsScreen({Key? key}) : super(key: key);
@@ -11,17 +51,24 @@ class HypertensionSymptomsScreen extends StatefulWidget {
 
 class _HypertensionSymptomsScreenState
     extends State<HypertensionSymptomsScreen> {
-  Map<String, bool> symptoms = {
-    'Severe headaches': false,
-    'Fatigue or confusion': false,
-    'Vision problems': false,
-    'Chest pain': false,
-    'Difficulty breathing': false,
-    'Irregular heartbeat': false,
-    'Blood in the urine': false,
-    'Pounding in chest, neck, or ears': false,
-    'Nosebleeds': false,
-  };
+  late Map<String, bool> symptoms;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final loc = AppLocalizations.of(context)!;
+    symptoms = {
+      loc.hypertension_symptom_headache: false,
+      loc.hypertension_symptom_fatigue: false,
+      loc.hypertension_symptom_vision: false,
+      loc.hypertension_symptom_chest_pain: false,
+      loc.hypertension_symptom_breathing: false,
+      loc.hypertension_symptom_heartbeat: false,
+      loc.hypertension_symptom_blood_urine: false,
+      loc.hypertension_symptom_pounding: false,
+      loc.hypertension_symptom_nosebleeds: false,
+    };
+  }
 
   int get symptomCount =>
       symptoms.values.where((isChecked) => isChecked).length;
@@ -29,42 +76,46 @@ class _HypertensionSymptomsScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF6C63FF), Color(0xFF4A90E2)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+    final loc = AppLocalizations.of(context)!;
+    return Directionality(
+      textDirection: Directionality.of(context),
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF6C63FF), Color(0xFF4A90E2)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
           ),
-        ),
-        title: const Text('Hypertension Symptoms'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFF8F9FF), Color(0xFFE6E9FF)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+          title: Text(loc.hypertension_symptoms_appbar),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).pop(),
           ),
         ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                children: [
-                  _buildSymptomsCard(),
-                  const SizedBox(height: 20),
-                  _buildActionButtons(),
-                ],
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFFF8F9FF), Color(0xFFE6E9FF)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  children: [
+                    _buildSymptomsCard(loc),
+                    const SizedBox(height: 20),
+                    _buildActionButtons(loc),
+                  ],
+                ),
               ),
             ),
           ),
@@ -73,7 +124,7 @@ class _HypertensionSymptomsScreenState
     );
   }
 
-  Widget _buildSymptomsCard() {
+  Widget _buildSymptomsCard(AppLocalizations loc) {
     return Card(
       elevation: 5,
       shape: RoundedRectangleBorder(
@@ -89,9 +140,9 @@ class _HypertensionSymptomsScreenState
               color: Color(0xFF6C63FF),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Hypertension Symptoms Check',
-              style: TextStyle(
+            Text(
+              loc.hypertension_symptoms_title,
+              style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF2D2D3A),
@@ -99,9 +150,9 @@ class _HypertensionSymptomsScreenState
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10),
-            const Text(
-              'Please check any symptoms you\'ve experienced recently:',
-              style: TextStyle(
+            Text(
+              loc.hypertension_symptoms_instruction,
+              style: const TextStyle(
                 fontSize: 16,
                 color: Color(0xFF5A5A5A),
                 height: 1.5,
@@ -111,7 +162,7 @@ class _HypertensionSymptomsScreenState
             const SizedBox(height: 20),
             _buildSymptomsCheckboxes(),
             const SizedBox(height: 20),
-            _buildStatusBox(),
+            _buildStatusBox(loc),
           ],
         ),
       ),
@@ -144,7 +195,7 @@ class _HypertensionSymptomsScreenState
     );
   }
 
-  Widget _buildStatusBox() {
+  Widget _buildStatusBox(AppLocalizations loc) {
     if (showWarning) {
       return Container(
         padding: const EdgeInsets.all(16),
@@ -160,19 +211,19 @@ class _HypertensionSymptomsScreenState
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
-              'Most likely you do not have hypertension.',
-              style: TextStyle(
+              loc.hypertension_symptoms_warning_title,
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFFE64A19),
               ),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
-              'You\'ve selected fewer than 1 symptoms. If you still want to check, use the button below.',
-              style: TextStyle(
+              loc.hypertension_symptoms_warning_desc,
+              style: const TextStyle(
                 fontSize: 14,
                 color: Color(0xFF5A5A5A),
                 height: 1.5,
@@ -195,7 +246,7 @@ class _HypertensionSymptomsScreenState
           ),
         ),
         child: Text(
-          'You\'ve selected $symptomCount symptoms. It\'s recommended to take a hypertension test.',
+          loc.hypertension_symptoms_selected(symptomCount),
           style: const TextStyle(
             fontSize: 16,
             color: Color(0xFF2D2D3A),
@@ -206,7 +257,7 @@ class _HypertensionSymptomsScreenState
     }
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(AppLocalizations loc) {
     return ElevatedButton(
       onPressed: () {
         Navigator.push(
@@ -222,7 +273,9 @@ class _HypertensionSymptomsScreenState
         ),
       ),
       child: Text(
-        showWarning ? 'Check Anyway' : 'Continue to Test',
+        showWarning
+            ? loc.hypertension_symptoms_check_anyway
+            : loc.hypertension_symptoms_continue,
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,

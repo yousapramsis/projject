@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
-// Import the PositiveResultPage for navigation when risk is positive
+import 'package:project_grad/l10n/app_localizations.dart';
+
 import 'hypertention_result_page.dart';
-// Comment out or remove this import if PositiveResultPage is the intended destination for positive results
-// import 'hypertention_result_page.dart';
 
 class HypertensionTestPage extends StatefulWidget {
   const HypertensionTestPage({Key? key}) : super(key: key);
@@ -15,7 +14,6 @@ class HypertensionTestPage extends StatefulWidget {
 
 class _HypertensionTestPageState extends State<HypertensionTestPage> {
   final _formKey = GlobalKey<FormState>();
-
   final TextEditingController ageController = TextEditingController();
   final TextEditingController bmiController = TextEditingController();
   final TextEditingController cholController = TextEditingController();
@@ -26,26 +24,25 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
   String? _smoking;
   bool hasDiabetes = false;
 
-  String result = ''; // Stores the result text, now includes percentage
-  double probabilityValue = 0.0; // Stores the raw probability (0.0 to 1.0)
-  bool _isHypertensive = false; // Flag to track positive result
-
+  String result = '';
+  double probabilityValue = 0.0;
+  bool _isHypertensive = false;
   late Interpreter _interpreter;
   bool _isModelLoaded = false;
   bool _isProcessing = false;
 
-  final String _modelPath =
-      'assets/assets/hypertension_model.tflite'; // Ensure this path is correct
+  final String _modelPath = 'assets/assets/hypertension_model.tflite';
 
   @override
   void initState() {
     super.initState();
-    _initializeModel();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeModel();
+    });
   }
 
   @override
   void dispose() {
-    // Dispose the interpreter only if it was successfully loaded and assigned
     if (_isModelLoaded && _interpreter != null) {
       _interpreter.close();
     }
@@ -63,36 +60,34 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
         _modelPath,
         options: InterpreterOptions()..threads = 4,
       );
-      // Basic check to see if it looks like a valid model
-      if (interpreter.getInputTensor(0).shape.isEmpty ||
-          interpreter.getOutputTensor(0).shape.isEmpty) {
-        throw Exception('Model seems empty or invalid.');
-      }
-      _interpreter = interpreter; // Assign only on success
-      setState(() => _isModelLoaded = true);
-      print('Hypertension model loaded successfully from $_modelPath.');
+      setState(() {
+        _interpreter = interpreter;
+        _isModelLoaded = true;
+      });
     } catch (e) {
       setState(() {
-        result =
-            'Model Load Error: ${e.toString()}'; // Set error message to result
+        result = AppLocalizations.of(context)!.model_error(e.toString());
         _isModelLoaded = false;
       });
-      print('Error loading Hypertension model from $_modelPath: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildGradientAppBar(),
-      body: buildBody(),
+    return Directionality(
+      textDirection: AppLocalizations.of(context)!.isRtl == "true"
+          ? TextDirection.rtl
+          : TextDirection.ltr,
+      child: Scaffold(
+        appBar: _buildGradientAppBar(context),
+        body: buildBody(context),
+      ),
     );
   }
 
-  AppBar _buildGradientAppBar() {
+  AppBar _buildGradientAppBar(BuildContext context) {
     return AppBar(
-      title: const Text('Hypertension Risk Assessment',
-          style: TextStyle(color: Colors.white)),
+      title: Text(AppLocalizations.of(context)!.hypertension_risk_assess),
       centerTitle: true,
       flexibleSpace: Container(
         decoration: const BoxDecoration(
@@ -107,7 +102,7 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
     );
   }
 
-  Widget buildBody() {
+  Widget buildBody(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -124,29 +119,22 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _buildHeader(),
+                _buildHeader(context),
                 const SizedBox(height: 30),
-                _buildInputSection(),
+                _buildInputSection(context),
                 const SizedBox(height: 30),
-
-                // Show model error if it failed to load
                 if (!_isModelLoaded &&
                     result.isNotEmpty &&
                     result.startsWith('Model Load Error')) ...[
-                  _buildModelError(), // Use the specific error builder
-                  const SizedBox(height: 20), // Add spacing
+                  _buildModelError(context),
+                  const SizedBox(height: 20),
                 ],
-
-                _buildResultDisplay(), // Displays the prediction result and probability
-
-                // --- Conditional Continue Button ---
-                // Show button ONLY if the _isHypertensive flag is true
+                _buildResultDisplay(context),
                 if (_isHypertensive) ...[
                   const SizedBox(height: 25),
-                  _buildContinueButton(),
+                  _buildContinueButton(context),
                 ],
-                // --- End Conditional Button ---
-                const SizedBox(height: 20), // Padding at the bottom
+                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -155,13 +143,13 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Column(
       children: [
         const Icon(Icons.monitor_heart, size: 70, color: Color(0xFF6C63FF)),
         const SizedBox(height: 20),
         Text(
-          'Hypertension Risk Assessment',
+          AppLocalizations.of(context)!.hypertension_risk_assess,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -172,7 +160,7 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Enter your health metrics for an assessment',
+          AppLocalizations.of(context)!.enter_metrics,
           style: TextStyle(fontSize: 16, color: Colors.grey[600], height: 1.5),
           textAlign: TextAlign.center,
         ),
@@ -180,7 +168,7 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
     );
   }
 
-  Widget _buildInputSection() {
+  Widget _buildInputSection(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
@@ -197,78 +185,94 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
       child: Column(
         children: [
           _buildDropdown(
-            label: 'Gender',
+            context: context,
+            label: AppLocalizations.of(context)!.gender,
             value: _gender,
-            items: ['Male', 'Female'],
+            items: [
+              AppLocalizations.of(context)!.gender_male,
+              AppLocalizations.of(context)!.gender_female,
+            ],
             onChanged: (v) => setState(() => _gender = v),
           ),
           const SizedBox(height: 20),
           _buildNumberInput(
+            context: context,
             controller: ageController,
-            label: 'Age',
+            label: AppLocalizations.of(context)!.age,
             icon: Icons.cake,
             validatorMin: 0,
             validatorMax: 120,
-            normalRange: '0 - 120 years',
+            normalRange: AppLocalizations.of(context)!.age_range_info,
           ),
           const SizedBox(height: 20),
           _buildDropdown(
-            label: 'Smoking Status',
+            context: context,
+            label: AppLocalizations.of(context)!.smoking_status,
             value: _smoking,
-            items: ['Never', 'Formerly', 'Smokes'],
+            items: [
+              AppLocalizations.of(context)!.smoking_never,
+              AppLocalizations.of(context)!.smoking_former,
+              AppLocalizations.of(context)!.smoking_current,
+            ],
             onChanged: (v) => setState(() => _smoking = v),
-            normalRange: 'N/A (Categorical)',
+            normalRange: AppLocalizations.of(context)!.cigs_per_day_range_info,
           ),
           const SizedBox(height: 20),
           _buildSwitchInput(
-            'Diabetes',
+            AppLocalizations.of(context)!.diabetes,
             hasDiabetes,
             (bool val) => setState(() => hasDiabetes = val),
           ),
           const SizedBox(height: 20),
           _buildNumberInput(
+            context: context,
             controller: bmiController,
-            label: 'BMI',
+            label: AppLocalizations.of(context)!.bmi,
             icon: Icons.fitness_center,
             validatorMin: 10,
             validatorMax: 60,
-            normalRange: '18.5 - 24.9',
+            normalRange: AppLocalizations.of(context)!.bmi_range_info,
           ),
           const SizedBox(height: 20),
           _buildNumberInput(
+            context: context,
             controller: cholController,
-            label: 'Cholesterol (mg/dL)',
+            label: AppLocalizations.of(context)!.total_cholesterol,
             icon: Icons.water_drop,
             validatorMin: 100,
             validatorMax: 500,
-            normalRange: '125 - 200',
+            normalRange:
+                AppLocalizations.of(context)!.total_cholesterol_range_info,
           ),
           const SizedBox(height: 20),
           _buildNumberInput(
+            context: context,
             controller: sysBPController,
-            label: 'Systolic BP (mm Hg)',
+            label: AppLocalizations.of(context)!.systolic_bp,
             icon: Icons.monitor_heart,
             validatorMin: 80,
             validatorMax: 250,
-            normalRange: '90 - 120',
+            normalRange: AppLocalizations.of(context)!.systolic_bp_range_info,
           ),
           const SizedBox(height: 20),
           _buildNumberInput(
+            context: context,
             controller: diaBPController,
-            label: 'Diastolic BP (mm Hg)',
+            label: AppLocalizations.of(context)!.diastolic_bp,
             icon: Icons.monitor_heart,
             validatorMin: 40,
             validatorMax: 150,
-            normalRange: '60 - 80',
+            normalRange: AppLocalizations.of(context)!.diastolic_bp_range_info,
           ),
           const SizedBox(height: 30),
-          _buildPredictButton(),
+          _buildPredictButton(context),
         ],
       ),
     );
   }
 
   Widget _buildDropdown({
+    required BuildContext context,
     required String label,
     required String? value,
     required List<String> items,
@@ -288,12 +292,13 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
                   showDialog(
                     context: context,
                     builder: (_) => AlertDialog(
-                      title: const Text('Normal Range'),
-                      content: Text('Normal range for "$label": $normalRange'),
+                      title: Text(AppLocalizations.of(context)!.normal_range),
+                      content: Text(
+                          '${AppLocalizations.of(context)!.normal_range_for} "$label": $normalRange'),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('OK'),
+                          child: Text(AppLocalizations.of(context)!.ok),
                         ),
                       ],
                     ),
@@ -318,12 +323,15 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
       ),
       items:
           items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-      validator: (v) => v == null ? 'Please select $label' : null,
+      validator: (v) => v == null
+          ? '${AppLocalizations.of(context)!.select_option} $label'
+          : null,
       onChanged: onChanged,
     );
   }
 
   Widget _buildNumberInput({
+    required BuildContext context,
     required TextEditingController controller,
     required String label,
     required IconData icon,
@@ -344,12 +352,13 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
             showDialog(
               context: context,
               builder: (_) => AlertDialog(
-                title: const Text('Normal Range'),
-                content: Text('Normal range for "$label": $normalRange'),
+                title: Text(AppLocalizations.of(context)!.normal_range),
+                content: Text(
+                    '${AppLocalizations.of(context)!.normal_range_for} "$label": $normalRange'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('OK'),
+                    child: Text(AppLocalizations.of(context)!.ok),
                   ),
                 ],
               ),
@@ -380,11 +389,13 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
         ),
       ),
       validator: (value) {
-        if (value == null || value.isEmpty) return 'Please enter $label';
+        if (value == null || value.isEmpty)
+          return '${AppLocalizations.of(context)!.required_field} $label';
         final numValue = double.tryParse(value);
-        if (numValue == null) return 'Invalid number';
+        if (numValue == null)
+          return AppLocalizations.of(context)!.invalid_number;
         if (numValue < validatorMin || numValue > validatorMax) {
-          return 'Value must be between ${validatorMin.toStringAsFixed(0)} and ${validatorMax.toStringAsFixed(0)}';
+          return '${AppLocalizations.of(context)!.must_be_between} ${validatorMin.toStringAsFixed(0)} ${AppLocalizations.of(context)!.and_text} ${validatorMax.toStringAsFixed(0)}';
         }
         return null;
       },
@@ -394,10 +405,9 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
     );
   }
 
-  Widget _buildContinueButton() {
+  Widget _buildContinueButton(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
-        // Navigate to the PositiveResultPage (same advice page as diabetes)
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const PositiveResultPage()),
@@ -410,9 +420,9 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
         elevation: 6,
         shadowColor: Colors.orangeAccent.withOpacity(0.4),
       ),
-      child: const Text(
-        'Continue for Advice',
-        style: TextStyle(
+      child: Text(
+        AppLocalizations.of(context)!.continue_advice,
+        style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
             letterSpacing: 1.1,
@@ -433,9 +443,11 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
     );
   }
 
-  Widget _buildPredictButton() {
+  Widget _buildPredictButton(BuildContext context) {
     return ElevatedButton(
-      onPressed: _isModelLoaded && !_isProcessing ? _handlePrediction : null,
+      onPressed: _isModelLoaded && !_isProcessing
+          ? () => _handlePrediction(context)
+          : null,
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 20),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -450,16 +462,15 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
               child: CircularProgressIndicator(
                   strokeWidth: 3, color: Colors.white),
             )
-          : const Text('Check Risk',
-              style: TextStyle(
+          : Text(AppLocalizations.of(context)!.check_risk,
+              style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: Colors.white)),
     );
   }
 
-  Widget _buildResultDisplay() {
-    // AnimatedSwitcher for smoother appearance/disappearance
+  Widget _buildResultDisplay(BuildContext context) {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 500),
       transitionBuilder: (Widget child, Animation<double> animation) {
@@ -467,47 +478,38 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
             scale: animation,
             child: FadeTransition(opacity: animation, child: child));
       },
-      // Use a ValueKey to ensure the animation triggers when content changes
-      child: result.isNotEmpty &&
-              !result.startsWith(
-                  'Model Load Error') // Don't show result box for model errors
+      child: result.isNotEmpty && !result.startsWith('Model Load Error')
           ? Container(
-              key: ValueKey(result), // Key based on the result string
+              key: ValueKey(result),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                // Use color based on the _isHypertensive flag
                 color: _getResultColor(_isHypertensive).withOpacity(0.1),
                 border: Border.all(
-                    color: _getResultColor(_isHypertensive),
-                    width: 2), // Border with color
+                    color: _getResultColor(_isHypertensive), width: 2),
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Column(
                 children: [
                   Icon(
-                    // Choose icon based on the _isHypertensive flag
                     _isHypertensive
-                        ? Icons
-                            .warning_amber_rounded // Warning icon for positive
-                        : Icons.check_circle, // Check icon for negative
-                    color: _getResultColor(
-                        _isHypertensive), // Icon color matches result color
+                        ? Icons.warning_amber_rounded
+                        : Icons.check_circle,
+                    color: _getResultColor(_isHypertensive),
                     size: 60,
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    result, // Display the result string (includes percentage)
+                    result,
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: _getResultColor(
-                          _isHypertensive), // Text color matches result color
+                      color: _getResultColor(_isHypertensive),
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 12),
                   LinearProgressIndicator(
-                    value: probabilityValue, // Use the raw probability value
+                    value: probabilityValue,
                     backgroundColor: Colors.grey.shade300,
                     valueColor: AlwaysStoppedAnimation<Color>(
                         _getResultColor(_isHypertensive)),
@@ -516,8 +518,7 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    // Display the probability text
-                    'Probability: ${(probabilityValue * 100).toStringAsFixed(2)}%',
+                    '${AppLocalizations.of(context)!.probability}: ${(probabilityValue * 100).toStringAsFixed(2)}%',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -528,45 +529,37 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
                 ],
               ),
             )
-          : const SizedBox
-              .shrink(), // Show nothing when result is empty or a model error
+          : const SizedBox.shrink(),
     );
   }
 
-  // Returns the color based on the boolean result flag
   Color _getResultColor(bool isHypertensive) {
     if (isHypertensive) {
-      return Colors.red; // Red for positive/warning
+      return Colors.red;
     } else {
-      return Colors.green; // Green for negative/success
+      return Colors.green;
     }
   }
 
-  Future<void> _handlePrediction() async {
-    // Clear previous result and state, start processing indicator
+  Future<void> _handlePrediction(BuildContext context) async {
     setState(() {
       _isProcessing = true;
-      result = ''; // Clear result text
-      probabilityValue = 0.0; // Reset probability
-      _isHypertensive = false; // Reset the flag
+      result = '';
+      probabilityValue = 0.0;
+      _isHypertensive = false;
     });
 
-    // Add a small delay to allow UI to update before potentially blocking
     await Future.delayed(const Duration(milliseconds: 50));
 
-    // Validate form
     if (!_formKey.currentState!.validate()) {
-      setState(() {
-        _isProcessing = false; // Stop processing if validation fails
-      });
-      return; // Stop if validation fails
+      setState(() => _isProcessing = false);
+      return;
     }
 
-    // Check if model is loaded before running inference
     if (!_isModelLoaded || _interpreter == null) {
       setState(() {
-        result =
-            'Error: Model not loaded. Cannot predict.'; // Update result for prediction failure
+        result = AppLocalizations.of(context)!
+            .model_error(AppLocalizations.of(context)!.failed_to_load_model);
         _isProcessing = false;
       });
       return;
@@ -575,8 +568,8 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
     try {
       final rawInputs = [
         double.parse(ageController.text),
-        _gender == 'Male' ? 1.0 : 0.0, // Gender: Male=1, Female=0
-        _getSmokingValue(_smoking), // Use a helper for smoking
+        _gender == AppLocalizations.of(context)!.gender_male ? 1.0 : 0.0,
+        _getSmokingValue(_smoking, context),
         double.parse(bmiController.text),
         double.parse(cholController.text),
         double.parse(sysBPController.text),
@@ -584,99 +577,53 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
         hasDiabetes ? 1.0 : 0.0
       ];
 
-      // Scaling inputs - **CRITICAL: Ensure _scaleInput matches your model's training scaler!**
       final scaledInputs = _scaleInput(rawInputs);
-
-      // TFLite input buffer shape [1, number_of_features]
       final input = [scaledInputs];
-
-      // TFLite output buffer shape [1, number_of_outputs] (usually [1, 1] for binary classification)
       final output = List.filled(1, 0.0).reshape([1, 1]);
 
-      // Run inference
       _interpreter.run(input, output);
+      final prediction = output[0][0];
 
-      final prediction =
-          output[0][0]; // Get the single probability value (e.g., 0.75)
-
-      // Determine boolean result and probability percentage for display
-      final isHypertensiveResult = prediction >=
-          0.5; // Use your model's probability threshold (e.g., 0.5)
+      final isHypertensiveResult = prediction >= 0.5;
       final probabilityPercentage = (prediction * 100).toStringAsFixed(2);
-      final resultText =
-          isHypertensiveResult ? 'Hypertensive' : 'Not Hypertensive';
+      final resultText = isHypertensiveResult
+          ? AppLocalizations.of(context)!.positive
+          : AppLocalizations.of(context)!.negative;
 
-      print(
-          "Hypertension Prediction Probability: $prediction ($probabilityPercentage%)");
-
-      // Update state with final result, probability, and the boolean flag
       setState(() {
-        probabilityValue = prediction; // Store raw probability
-        result =
-            '$resultText ($probabilityPercentage%)'; // Set the result string including percentage
-        _isHypertensive =
-            isHypertensiveResult; // Set the boolean flag based on prediction
+        probabilityValue = prediction;
+        result = '$resultText ($probabilityPercentage%)';
+        _isHypertensive = isHypertensiveResult;
       });
     } catch (e) {
       setState(() {
-        result =
-            'Prediction failed: ${e.toString()}'; // Show error in result area
-        _isHypertensive = false; // Ensure flag is false on error
+        result = AppLocalizations.of(context)!.model_error(e.toString());
+        _isHypertensive = false;
       });
-      print("Hypertension Prediction error: $e");
     } finally {
-      setState(() => _isProcessing = false); // Always stop processing
+      setState(() => _isProcessing = false);
     }
   }
 
-  // Helper function to map smoking status string to numerical value
-  double _getSmokingValue(String? smokingStatus) {
-    // **CRITICAL: Ensure this mapping matches the encoding used when training your model!**
+  double _getSmokingValue(String? smokingStatus, BuildContext context) {
     switch (smokingStatus) {
-      case 'Never':
+      case 'لم يدخن': // Never
         return 0.0;
-      case 'Formerly':
-        return 0.5; // Assuming Formerly is 0.5, adjust if your model used 0 or 1
-      case 'Smokes':
+      case 'مدخن سابق': // Formerly
+        return 0.5;
+      case 'مدخن حالياً': // Smokes
         return 1.0;
       default:
-        return 0.0; // Handle null or 'No Info' as Never
+        return 0.0;
     }
   }
 
-  // Example scaling logic - **Verify this matches your model's training scaler!**
   List<double> _scaleInput(List<double> rawInputs) {
-    // These min/max values *must* come from the data used to train your hypertension model's scaler.
-    // If your model used StandardScaler or MinMaxScaler, these need to match those fit on the training data.
-    // The order and values below are placeholders based on typical ranges but might not be correct for your model.
-    // Match the order of rawInputs: age, gender, smoking, bmi, chol, sysBP, diaBP, diabetes
-    final minValues = [
-      0.0,
-      0.0,
-      0.0,
-      10.0,
-      100.0,
-      80.0,
-      40.0,
-      0.0
-    ]; // Example min for each feature
-    final maxValues = [
-      120.0,
-      1.0,
-      1.0,
-      60.0,
-      500.0,
-      250.0,
-      150.0,
-      1.0
-    ]; // Example max for each feature
+    final minValues = [0.0, 0.0, 0.0, 10.0, 100.0, 80.0, 40.0, 0.0];
+    final maxValues = [120.0, 1.0, 1.0, 60.0, 500.0, 250.0, 150.0, 1.0];
 
     if (rawInputs.length != minValues.length ||
         rawInputs.length != maxValues.length) {
-      print(
-          "Scaling Error: Input length (${rawInputs.length}) doesn't match min/max value lists length (${minValues.length}).");
-      // In a real app, you might want to throw an exception or show a user-friendly error
-      // For now, we'll just return the raw inputs (prediction will likely be wrong)
       return rawInputs;
     }
 
@@ -684,12 +631,8 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
     for (int i = 0; i < rawInputs.length; i++) {
       final min = minValues[i];
       final max = maxValues[i];
-      // Prevent division by zero if max == min
       if (max == min) {
-        // Handle this case - might return 0.0, raw value, or throw error depending on scaler type
-        print(
-            "Scaling Warning: Max equals Min for feature at index $i. Cannot scale. Returning raw value or 0.0.");
-        scaled.add(rawInputs[i]); // Or scaled.add(0.0)
+        scaled.add(rawInputs[i]);
       } else {
         scaled.add((rawInputs[i] - min) / (max - min));
       }
@@ -697,16 +640,14 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
     return scaled;
   }
 
-  // Modified _buildModelError to be more informative and only show load error
-  Widget _buildModelError() {
-    // This widget is specifically for the initial model *loading* error
+  Widget _buildModelError(BuildContext context) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20),
         child: Text(
           result.isNotEmpty
               ? result
-              : 'Loading Hypertension model...', // Show the error message from state, or loading text
+              : AppLocalizations.of(context)!.failed_to_load_model,
           style: const TextStyle(
             fontSize: 18,
             color: Colors.redAccent,
@@ -717,4 +658,4 @@ class _HypertensionTestPageState extends State<HypertensionTestPage> {
       ),
     );
   }
-} // End of _HypertensionTestPageState class
+}

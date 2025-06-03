@@ -3,123 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:project_grad/l10n/app_localizations.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
-class PositiveResultPage extends StatelessWidget {
-  final String condition;
-  const PositiveResultPage({Key? key, required this.condition})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
-    String title;
-    switch (condition) {
-      case 'heart':
-        title = loc.heart_disease_advice;
-        break;
-      case 'diabetes':
-        title = loc.diabetes_advice;
-        break;
-      case 'hypertension':
-        title = loc.hypertension_advice;
-        break;
-      default:
-        title = loc.important_health_advice;
-    }
-
-    return Directionality(
-      textDirection:
-          loc.isRtl == "true" ? TextDirection.rtl : TextDirection.ltr,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(title),
-          centerTitle: true,
-          flexibleSpace: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF6C63FF), Color(0xFF4A90E2)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-          ),
-          iconTheme: const IconThemeData(color: Colors.white),
-        ),
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFFF8F9FF), Color(0xFFE6E9FF)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.health_and_safety,
-                    size: 60, color: Color(0xFF6C63FF)),
-                const SizedBox(height: 20),
-                Text(
-                  loc.heart_health_recommendations,
-                  style: const TextStyle(
-                      fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 20),
-                _buildAdviceCard(
-                  context,
-                  Icons.restaurant,
-                  loc.healthy_diet_title,
-                  loc.healthy_diet_description,
-                ),
-                _buildAdviceCard(
-                  context,
-                  Icons.directions_run,
-                  loc.exercise_title,
-                  loc.exercise_description,
-                ),
-                _buildAdviceCard(
-                  context,
-                  Icons.medical_services,
-                  loc.consult_doctor_title,
-                  loc.consult_doctor_description,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAdviceCard(
-      BuildContext context, IconData icon, String title, String description) {
-    return Card(
-      elevation: 4,
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: const Color(0xFF6C63FF), size: 30),
-                const SizedBox(width: 12),
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(description, style: const TextStyle(fontSize: 16)),
-          ],
-        ),
-      ),
-    );
-  }
-}
+import '../Hypertention/hypertention_result_page.dart' show PositiveResultPage;
 
 class HeartDiseasesTestPage extends StatefulWidget {
   const HeartDiseasesTestPage({Key? key}) : super(key: key);
@@ -364,7 +248,7 @@ class _HeartDiseaseTestPageState extends State<HeartDiseasesTestPage>
           label: AppLocalizations.of(context)!.cigarettes_per_day,
           icon: Icons.smoking_rooms,
           validatorMin: 0,
-          validatorMax: 100,
+          validatorMax: 20,
         ),
         _buildSwitchInput(AppLocalizations.of(context)!.bp_medication, bpmeds,
             (v) => setState(() => bpmeds = v)),
@@ -563,10 +447,7 @@ class _HeartDiseaseTestPageState extends State<HeartDiseasesTestPage>
     return ElevatedButton(
       onPressed: () => Navigator.push(
         context,
-        MaterialPageRoute(
-            builder: (context) => const PositiveResultPage(
-                  condition: 'hypertension',
-                )),
+        MaterialPageRoute(builder: (context) => PositiveResultPage()),
       ),
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 35),

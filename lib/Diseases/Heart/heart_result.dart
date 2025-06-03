@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:project_grad/l10n/app_localizations.dart' show AppLocalizations;
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart'; // For kDebugMode
 
 class PositiveResultPage extends StatelessWidget {
   const PositiveResultPage({Key? key}) : super(key: key);
 
   // Simplified Google Maps link using coordinates
-  final String _mapsUrl =
-      "https://www.google.com/maps/search/?api=1&query=29.9787527,30.9502569";
+  final String _mapsUrl = "https://maps.app.goo.gl/Q9dHhvuhpRvHP3vE6";
 
   // Launch the URL in external maps app
   Future<void> _launchMapsUrl(BuildContext context) async {
     final Uri uri = Uri.parse(_mapsUrl);
-    final loc = AppLocalizations.of(context)!;
 
     try {
       if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
         if (kDebugMode) {
           print('launchUrl returned false.');
         }
-        _showErrorSnackbar(context, loc.map_error);
+        _showErrorSnackbar(context, 'Could not open map location.');
       } else {
         if (kDebugMode) {
           print('Map launched successfully.');
@@ -30,7 +27,7 @@ class PositiveResultPage extends StatelessWidget {
       if (kDebugMode) {
         print('Error launching map: $e');
       }
-      _showErrorSnackbar(context, '${loc.error_occurred}: $e');
+      _showErrorSnackbar(context, 'An error occurred: $e');
     }
   }
 
@@ -46,14 +43,10 @@ class PositiveResultPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
-    // Check if the app is in RTL mode
-    final bool isRtl = loc.isRtl == "true";
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(loc.important_health_advice,
-            style: const TextStyle(color: Colors.white)),
+        title: const Text('Important Health Advice',
+            style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.redAccent,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -71,60 +64,31 @@ class PositiveResultPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              // Container with the design specs from the image
-              Container(
-                width: 382,
-                height: 315,
-                margin: const EdgeInsets.only(top: 181, left: 24, right: 24),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFFFFF),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.19),
-                      offset: const Offset(0, 4),
-                      blurRadius: 13.3,
-                      spreadRadius: 0,
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.warning_amber_rounded,
-                        size: 60,
-                        color: Colors.redAccent,
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        loc.heart_disease_risk_warning,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.redAccent,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 15),
-                      Text(
-                        loc.heart_disease_warning_text,
-                        style: TextStyle(
-                            fontSize: 16, color: Colors.grey[800], height: 1.4),
-                        textAlign: TextAlign.center,
-                      ),
-                      const Spacer(),
-                    ],
-                  ),
-                ),
+              const Icon(
+                Icons.warning_amber_rounded,
+                size: 80,
+                color: Colors.redAccent,
               ),
-
-              const Spacer(),
-
+              const SizedBox(height: 25),
+              const Text(
+                'Warning: Potential Heart diseases Risk Detected',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.redAccent,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
               Text(
-                loc.medical_consult_advice,
+                'Heart diseases are serious conditions that require prompt medical attention. Early diagnosis and management are crucial for preventing complications.',
+                style: TextStyle(
+                    fontSize: 17, color: Colors.grey[800], height: 1.5),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 25),
+              Text(
+                'We strongly advise you to consult a healthcare professional immediately. Please visit a hospital for further testing and guidance.',
                 style: TextStyle(
                     fontSize: 17,
                     color: Colors.grey[800],
@@ -132,22 +96,20 @@ class PositiveResultPage extends StatelessWidget {
                     height: 1.5),
                 textAlign: TextAlign.center,
               ),
-
-              const SizedBox(height: 25),
+              const SizedBox(height: 30),
               Text(
-                loc.hospital_recommendation_heart,
+                'Here is a recommended hospital that can assist you:',
                 style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 17,
                     color: Colors.grey[700],
                     fontStyle: FontStyle.italic),
                 textAlign: TextAlign.center,
               ),
-
               const SizedBox(height: 25),
               ElevatedButton.icon(
                 icon: const Icon(Icons.location_on, color: Colors.white),
-                label: Text(loc.get_hospital_location,
-                    style: const TextStyle(fontSize: 18, color: Colors.white)),
+                label: const Text('Get Hospital Location',
+                    style: TextStyle(fontSize: 18, color: Colors.white)),
                 onPressed: () => _launchMapsUrl(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
@@ -159,8 +121,7 @@ class PositiveResultPage extends StatelessWidget {
                   elevation: 5,
                 ),
               ),
-
-              const SizedBox(height: 20),
+              const Spacer(),
             ],
           ),
         ),

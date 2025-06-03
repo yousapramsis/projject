@@ -179,6 +179,23 @@
   "hdl_range_info": "Low (increased risk): < 40 mg/dL (men), < 50 mg/dL (women). Optimal (protective): >= 60 mg/dL.",
   "normal_range": "Normal Range",
   "normal_range_for": "Normal range for",
-  "ok": "OK"
+  "ok": "OK",
+  "hypertension_symptom_headache": "Severe headaches",
+  "hypertension_symptom_fatigue": "Fatigue or confusion",
+  "hypertension_symptom_vision": "Vision problems",
+  "hypertension_symptom_chest_pain": "Chest pain",
+  "hypertension_symptom_breathing": "Difficulty breathing",
+  "hypertension_symptom_heartbeat": "Irregular heartbeat",
+  "hypertension_symptom_blood_urine": "Blood in the urine",
+  "hypertension_symptom_pounding": "Pounding in chest, neck, or ears",
+  "hypertension_symptom_nosebleeds": "Nosebleeds",
+  "hypertension_symptoms_appbar": "Hypertension Symptoms Check",
+  "hypertension_symptoms_title": "Please check any symptoms you've experienced recently:",
+  "hypertension_symptoms_instruction": "You've selected fewer than 1 symptoms. If you still want to check, use the button below.",
+  "hypertension_symptoms_warning_title": "Warning: Potential Hypertension Risk Detected",
+  "hypertension_symptoms_warning_desc": "Hypertension is a serious condition...",
+  "hypertension_symptoms_selected": "You've selected {count} symptoms. It's recommended to take a hypertension test.",
+  "hypertension_symptoms_check_anyway": "Check Anyway",
+  "hypertension_symptoms_continue": "Continue Test"
 
 }

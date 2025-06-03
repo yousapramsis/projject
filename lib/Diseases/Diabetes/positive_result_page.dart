@@ -1,27 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:project_grad/l10n/app_localizations.dart' show AppLocalizations;
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart'; // For kDebugMode
 
 class PositiveResultPage extends StatelessWidget {
   const PositiveResultPage({Key? key}) : super(key: key);
 
+  // Simplified Google Maps link using coordinates
   final String _mapsUrl =
       "https://www.google.com/maps/search/?api=1&query=29.9787527,30.9502569";
 
+  // Launch the URL in external maps app
   Future<void> _launchMapsUrl(BuildContext context) async {
     final Uri uri = Uri.parse(_mapsUrl);
-    final loc = AppLocalizations.of(context)!;
 
     try {
       if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-        _showErrorSnackbar(context, loc.map_error);
+        if (kDebugMode) {
+          print('launchUrl returned false.');
+        }
+        _showErrorSnackbar(context, 'Could not open map location.');
+      } else {
+        if (kDebugMode) {
+          print('Map launched successfully.');
+        }
       }
     } catch (e) {
-      _showErrorSnackbar(context, '${loc.error_occurred}: $e');
+      if (kDebugMode) {
+        print('Error launching map: $e');
+      }
+      _showErrorSnackbar(context, 'An error occurred: $e');
     }
   }
 
+  // Display a red error message
   void _showErrorSnackbar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -33,11 +44,10 @@ class PositiveResultPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(loc.important_advice),
+        title: const Text('Important Health Advice',
+            style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.redAccent,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -61,9 +71,9 @@ class PositiveResultPage extends StatelessWidget {
                 color: Colors.redAccent,
               ),
               const SizedBox(height: 25),
-              Text(
-                loc.diabetes_warning,
-                style: const TextStyle(
+              const Text(
+                'Warning: Potential Diabetes Risk Detected',
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.redAccent,
@@ -72,14 +82,14 @@ class PositiveResultPage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Text(
-                loc.diabetes_advice,
+                'Diabetes is a serious condition that requires prompt medical attention. Early diagnosis and management are crucial for preventing complications.',
                 style: TextStyle(
                     fontSize: 17, color: Colors.grey[800], height: 1.5),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 25),
               Text(
-                loc.medical_advice,
+                'We strongly advise you to consult a healthcare professional immediately. Please visit a hospital for further testing and guidance.',
                 style: TextStyle(
                     fontSize: 17,
                     color: Colors.grey[800],
@@ -89,7 +99,7 @@ class PositiveResultPage extends StatelessWidget {
               ),
               const SizedBox(height: 30),
               Text(
-                loc.hospital_recommendation,
+                'Here is a recommended hospital that can assist you:',
                 style: TextStyle(
                     fontSize: 17,
                     color: Colors.grey[700],
@@ -99,7 +109,8 @@ class PositiveResultPage extends StatelessWidget {
               const SizedBox(height: 25),
               ElevatedButton.icon(
                 icon: const Icon(Icons.location_on, color: Colors.white),
-                label: Text(loc.get_location),
+                label: const Text('Get Hospital Location',
+                    style: TextStyle(fontSize: 18, color: Colors.white)),
                 onPressed: () => _launchMapsUrl(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
@@ -108,10 +119,10 @@ class PositiveResultPage extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
+                  elevation: 5,
                 ),
               ),
-
-              const Spacer(), // ✅ Now placed separately in the Column
+              const Spacer(),
             ],
           ),
         ),

@@ -175,7 +175,23 @@
   "hdl_range_info": "منخفض (زيادة الخطر): < 40 ملغم/ديسيلتر (رجال)، < 50 ملغم/ديسيلتر (نساء). الأمثل (وقائي): >= 60 ملغم/ديسيلتر.",
   "normal_range": "النطاق الطبيعي",
   "normal_range_for": "النطاق الطبيعي لـ",
-  "ok": "حسناً"
+  "ok": "حسناً","hypertension_symptom_headache": "صداع شديد",
+  "hypertension_symptom_fatigue": "التعب أو الارتباك",
+  "hypertension_symptom_vision": "مشاكل في الرؤية",
+  "hypertension_symptom_chest_pain": "ألم في الصدر",
+  "hypertension_symptom_breathing": "صعوبة في التنفس",
+  "hypertension_symptom_heartbeat": "عدم انتظام ضربات القلب",
+  "hypertension_symptom_blood_urine": "دم في البول",
+  "hypertension_symptom_pounding": "خفقان في الصدر أو الرقبة أو الأذنين",
+  "hypertension_symptom_nosebleeds": "نزيف الأنف",
+  "hypertension_symptoms_appbar": "فحص أعراض ارتفاع ضغط الدم",
+  "hypertension_symptoms_title": "الرجاء تحديد أي أعراض تعرضت لها مؤخراً:",
+  "hypertension_symptoms_instruction": "لقد حددت أقل من عرض واحد. إذا كنت لا تزال ترغب في الفحص، استخدم الزر أدناه.",
+  "hypertension_symptoms_warning_title": "تحذير: تم اكتشاف خطر محتمل لارتفاع ضغط الدم",
+  "hypertension_symptoms_warning_desc": "ارتفاع ضغط الدم حالة خطيرة تتطلب...",
+  "hypertension_symptoms_selected": "لقد حددت {count} أعراض. يُنصح بإجراء فحص لارتفاع ضغط الدم.",
+  "hypertension_symptoms_check_anyway": "افحص على أي حال",
+  "hypertension_symptoms_continue": "متابعة الاختبار"
 
 
 }
